@@ -14,7 +14,7 @@
 
 ## Endpoints
 
-### POST /expenses
+### POST /expense
 
 Log a new expense or earning transaction.
 
@@ -25,8 +25,7 @@ Log a new expense or earning transaction.
 | `amount` | float | ✅ | Transaction amount (positive) |
 | `category` | enum | ✅ | See category values below |
 | `transaction_type` | enum | ✅ | `Credit` or `Debit` |
-| `date` | string | ✅ | ISO 8601 date (`YYYY-MM-DD`) |
-| `description` | string | ❌ | Optional description |
+| `created_at` | string | ✅ | ISO 8601 datetime (`YYYY-MM-DDTHH:MM:SS`) |
 
 #### Category Values
 

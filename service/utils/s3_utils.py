@@ -3,8 +3,7 @@
 from io import BytesIO
 
 import boto3
-import pyarrow as pa
-import pyarrow.parquet as pq
+import polars as pl
 from aws_lambda_powertools import Logger
 
 from service.shared.config import get_s3_settings
@@ -72,12 +71,12 @@ def export_transactions_to_s3(
         logger.info('No transactions to export')
         return
 
-    # Convert to PyArrow Table
-    table = pa.Table.from_pylist(records)
+    # Convert to Polars DataFrame and write to Parquet
+    df = pl.DataFrame(records)
 
     # Write to buffer
     buffer = BytesIO()
-    pq.write_table(table, buffer)
+    df.write_parquet(buffer)
     buffer.seek(0)
 
     # Upload to S3 as single monthly file

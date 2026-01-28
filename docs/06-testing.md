@@ -64,9 +64,7 @@ uv run pytest --cov=service --cov-report=html --cov-report=term-missing
 | Amount must be positive | Reject negative amounts |
 | Amount rounding | Round to 2 decimal places |
 | Invalid category | Reject unknown category values |
-| Invalid date format | Reject non-ISO date formats |
-| Description max length | Reject > 500 characters |
-| Optional description | Allow null description |
+| Invalid datetime format | Reject non-ISO datetime formats |
 | Category enum values | All 8 categories exist |
 | Transaction type values | Credit and Debit exist |
 
@@ -75,8 +73,10 @@ uv run pytest --cov=service --cov-report=html --cov-report=term-missing
 | Test | Description |
 |------|-------------|
 | Create expense success | Returns 201 with expense_id |
-| Validation error | Returns 422 for invalid data |
+| Invalid amount | Returns 422 for negative amount |
+| Invalid category | Returns 422 for unknown category |
 | Missing required field | Returns 422 for incomplete data |
+| Amount rounding | Verifies amount rounded to 2 decimals |
 
 #### Report Route Tests (`test_report.py`)
 

@@ -33,7 +33,7 @@ A serverless backend designed for high extensibility, allowing for the logging o
 
 ### 3.1 REST API Features
 
-#### Expense Endpoint: `POST /expenses`
+#### Expense Endpoint: `POST /expense`
 
 - Accepts JSON matching the `Expense` model
 - Validates input via Pydantic
@@ -123,7 +123,7 @@ A serverless backend designed for high extensibility, allowing for the logging o
 
 | Function | Description |
 |----------|-------------|
-| `lambda-home-api` | API Lambda (POST /expenses, GET /report/expense) |
+| `lambda-home-api` | API Lambda (POST /expense, GET /report/expense) |
 | `lambda-home-batch` | Batch Lambda (monthly aggregation + S3 export) |
 
 ## 7. Project Structure
@@ -132,7 +132,7 @@ See [01-architecture.md](./01-architecture.md) for complete project structure.
 
 ```
 service/
-├── api/           # API Lambda (POST /expenses, GET /report/expense)
+├── api/           # API Lambda (POST /expense, GET /report/expense)
 ├── batch/         # Batch Lambda (monthly aggregation + S3 export)
 ├── shared/        # Shared code (models, database, config)
 └── utils/         # Utility functions

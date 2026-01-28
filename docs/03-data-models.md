@@ -32,15 +32,20 @@ All data models are defined using **Pydantic v2** for validation and serializati
 
 ## Expense Model
 
-### Schema: `ExpenseCreate`
+### Schema: `ExpenseInput`
 
 | Field | Type | Required | Validation | Description |
 |-------|------|----------|------------|-------------|
-| `amount` | float | ✅ | > 0, rounded to 2 decimals | Transaction amount |
+| `amount` | PositiveAmount | ✅ | > 0, rounded to 2 decimals | Transaction amount |
 | `category` | Category | ✅ | Valid enum value | Expense category |
 | `transaction_type` | TransactionType | ✅ | Credit or Debit | Transaction type |
-| `date` | date | ✅ | ISO 8601 format | Transaction date |
-| `description` | string | ❌ | Max 500 characters | Optional description |
+| `created_at` | datetime | ✅ | ISO 8601 datetime | Transaction timestamp |
+
+### Schema: `Expense` (extends ExpenseInput)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | MongoDB ObjectId (aliased from `_id`) |
 
 ### MongoDB Collection: `expenses`
 
@@ -50,16 +55,14 @@ All data models are defined using **Pydantic v2** for validation and serializati
 | `amount` | Double | - | Transaction amount |
 | `category` | String | ✅ | Category enum value |
 | `transaction_type` | String | ✅ | Credit or Debit |
-| `date` | Date | ✅ | Transaction date |
-| `description` | String | - | Optional description |
-| `created_at` | Date | - | Record creation timestamp |
+| `created_at` | Date | ✅ | Transaction timestamp |
 
 ### Recommended Indexes
 
-- `{ "date": 1 }`
+- `{ "created_at": 1 }`
 - `{ "category": 1 }`
 - `{ "transaction_type": 1 }`
-- `{ "date": 1, "category": 1 }` (compound)
+- `{ "created_at": 1, "category": 1 }` (compound)
 
 ---
 

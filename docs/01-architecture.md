@@ -72,14 +72,14 @@ LambdaApps/
 │   ├── api/                    # API Lambda
 │   │   ├── handler.py          # Entry point
 │   │   └── routes/
-│   │       ├── expenses.py     # POST /expenses
+│   │       ├── expenses.py     # POST /expense
 │   │       └── report.py       # GET /report/expense
 │   │
 │   ├── batch/                  # Batch Lambda
 │   │   └── handler.py          # Entry point
 │   │
 │   ├── shared/                 # Shared code
-│   │   ├── config.py           # Configuration
+│   │   ├── config.py           # Configuration (MongoSettings, S3Settings)
 │   │   ├── database.py         # MongoDB connection
 │   │   └── models/             # Pydantic models
 │   │
@@ -98,7 +98,7 @@ LambdaApps/
 
 ### Expense Logging
 
-1. Client → POST /expenses with JSON
+1. Client → POST /expense with JSON
 2. API Gateway → lambda-home-api
 3. Validate via Pydantic
 4. Insert to MongoDB `expenses` collection
