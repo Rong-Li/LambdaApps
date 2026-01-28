@@ -1,22 +1,26 @@
 [project]
-name = "lambdaapps"
+name = "homeapp"
 version = "0.1.0"
-description = "Add your description here"
+description = "Personal finance tracking serverless backend"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "aws-lambda-powertools[all]>=3.18.0",
     "pydantic>=2.10.0",
-    "requests>=2.32.0",
+    "pydantic-settings>=2.0.0",
+    "pymongo>=4.6.0",
+    "pyarrow>=15.0.0",
+    "boto3>=1.34.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "moto>=5.0.0",
 ]
 
-[tool.uv.sources]
-service-cdk = { path = "cdk", editable = true }
 
 [tool.hatch.build.targets.wheel]
 packages = ["service"]
@@ -25,7 +29,14 @@ packages = ["service"]
 skip-excluded-dirs = true
 
 [tool.pytest.ini_options]
-testpaths = "tests"
+testpaths = ["tests"]
+markers = [
+    "integration: marks tests as integration tests",
+    "slow: marks tests as slow",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
@@ -88,4 +99,15 @@ indent-style = "space"
 line-ending = "auto"
 
 [tool.ruff.lint.isort]
-known-third-party = ["pydantic", "aws_lambda_powertools"]
+known-third-party = ["pydantic", "pydantic_settings", "aws_lambda_powertools", "pymongo", "boto3", "pyarrow"]
+
+[tool.coverage.run]
+source = ["service"]
+omit = ["*/tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
