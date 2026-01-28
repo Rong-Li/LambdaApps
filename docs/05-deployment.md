@@ -14,8 +14,8 @@ homeapp uses **GitHub Actions** for CI/CD with direct zip-and-upload deployment 
 |----------|------|-------------|
 | **Lambda Layer (API)** | `homeapp-api-layer` | powertools, pydantic, pymongo |
 | **Lambda Layer (Batch)** | `homeapp-batch-layer` | + polars for Parquet export |
-| **Lambda Function** | `HomeApp-LambdaFunction-APIs` | API handler |
-| **Lambda Function** | `HomeApp-LambdaFunction-Batch` | Batch handler |
+| **Lambda Function** | `lambda-home-api` | API handler |
+| **Lambda Function** | `lambda-home-batch` | Batch handler |
 | **API Gateway** | `homeapp-http-api` | HTTP API (rate: 5/sec, quota: 100/day) |
 | **S3 Bucket** | `homeapp-archive` | Transaction archives |
 | **EventBridge Rule** | `homeapp-monthly-batch` | Monthly trigger (Toronto ET) |
@@ -143,7 +143,7 @@ aws lambda publish-layer-version \
       "lambda:UpdateFunctionCode"
     ],
     "Resource": [
-      "arn:aws:lambda:ca-central-1:*:function:HomeApp-LambdaFunction-*"
+      "arn:aws:lambda:ca-central-1:*:function:lambda-home-*"
     ]
   }]
 }
@@ -176,14 +176,14 @@ aws lambda publish-layer-version \
 
 ## Environment Variables
 
-### API Lambda (`HomeApp-LambdaFunction-APIs`)
+### API Lambda (`lambda-home-api`)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `MONGODB_URI` | ✅ | MongoDB connection string |
 | `MONGODB_DATABASE` | ✅ | Database name (`homeapp`) |
 
-### Batch Lambda (`HomeApp-LambdaFunction-Batch`)
+### Batch Lambda (`lambda-home-batch`)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -264,8 +264,8 @@ uv run ruff check service/
 
 ### CloudWatch Log Groups
 
-- `/aws/lambda/HomeApp-LambdaFunction-APIs`
-- `/aws/lambda/HomeApp-LambdaFunction-Batch`
+- `/aws/lambda/lambda-home-api`
+- `/aws/lambda/lambda-home-batch`
 
 ### Common Issues
 

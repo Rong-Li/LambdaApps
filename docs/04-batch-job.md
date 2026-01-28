@@ -22,7 +22,7 @@ The batch job runs on the **1st of each month** to:
 
 | Property | Value |
 |----------|-------|
-| **Function Name** | `HomeApp-LambdaFunction-Batch` |
+| **Function Name** | `lambda-home-batch` |
 | **Timeout** | 5 minutes (300 seconds) |
 | **Memory** | 512 MB |
 | **Runtime** | Python 3.14 |

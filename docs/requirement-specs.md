@@ -123,8 +123,8 @@ A serverless backend designed for high extensibility, allowing for the logging o
 
 | Function | Description |
 |----------|-------------|
-| `HomeApp-LambdaFunction-APIs` | API Lambda (POST /expense, GET /report/expense) |
-| `HomeApp-LambdaFunction-Batch` | Batch Lambda (monthly aggregation + S3 export) |
+| `lambda-home-api` | API Lambda (POST /expense, GET /report/expense) |
+| `lambda-home-batch` | Batch Lambda (monthly aggregation + S3 export) |
 
 ## 7. Project Structure
 

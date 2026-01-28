@@ -32,8 +32,8 @@ A serverless backend built on AWS Lambda for logging expenses and investments, w
 
 | Function | Layer | Purpose |
 |----------|-------|---------|
-| `HomeApp-LambdaFunction-APIs` | `homeapp-api-layer` | REST API for expenses and reports |
-| `HomeApp-LambdaFunction-Batch` | `homeapp-batch-layer` | Monthly aggregation (1st of month, Toronto ET) |
+| `lambda-home-api` | `homeapp-api-layer` | REST API for expenses and reports |
+| `lambda-home-batch` | `homeapp-batch-layer` | Monthly aggregation (1st of month, Toronto ET) |
 
 ## API Endpoints
 

@@ -60,7 +60,7 @@ jobs:
       - name: Deploy API function
         uses: aws-actions/aws-lambda-deploy@v1
         with:
-          function-name: HomeApp-LambdaFunction-APIs
+          function-name: lambda-home-api
           code-artifacts-dir: ./dist/api
           runtime: python3.14
           handler: service.api.handler.handler
@@ -68,7 +68,7 @@ jobs:
       - name: Deploy Batch function
         uses: aws-actions/aws-lambda-deploy@v1
         with:
-          function-name: HomeApp-LambdaFunction-Batch
+          function-name: lambda-home-batch
           code-artifacts-dir: ./dist/batch
           runtime: python3.14
           handler: service.batch.handler.handler
