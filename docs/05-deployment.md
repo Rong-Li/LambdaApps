@@ -143,7 +143,7 @@ aws lambda publish-layer-version \
       "lambda:UpdateFunctionCode"
     ],
     "Resource": [
-      "arn:aws:lambda:*:*:function:HomeApp-LambdaFunction-*"
+      "arn:aws:lambda:ca-central-1:*:function:HomeApp-LambdaFunction-*"
     ]
   }]
 }
