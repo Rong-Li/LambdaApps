@@ -1,0 +1,16 @@
+[project]
+name = "lambdaapps"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "aws-lambda-powertools[all]>=3.18.0",
+    "pydantic>=2.10.0",
+    "requests>=2.32.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
