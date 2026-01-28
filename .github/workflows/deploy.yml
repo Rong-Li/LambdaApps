@@ -3,6 +3,12 @@ name: Deploy to AWS Lambda
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'build_lambda_layer.sh'
+      - 'Docs/**'
+      - '*.md'
   workflow_dispatch:
 
 env:
@@ -62,9 +68,11 @@ jobs:
         with:
           function-name: HomeApp-LambdaFunction-APIs
           code-artifacts-dir: ./dist/api
+          update-code-only: true
 
       - name: Deploy Batch function
         uses: aws-actions/aws-lambda-deploy@v1
         with:
           function-name: HomeApp-LambdaFunction-Batch
           code-artifacts-dir: ./dist/batch
+          update-code-only: true
