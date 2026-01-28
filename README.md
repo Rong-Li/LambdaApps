@@ -12,14 +12,14 @@ A serverless backend built on AWS Lambda for logging expenses and investments, w
 - **API Framework**: AWS Lambda Powertools
 - **Data Validation**: Pydantic v2
 - **Database**: MongoDB Atlas (PyMongo)
-- **Storage**: S3 (Parquet archives)
-- **CI/CD**: GitHub Actions
+- **Storage**: S3 (Parquet archives via Polars)
+- **CI/CD**: GitHub Actions (OIDC)
 
 ## Project Structure
 
 ```
 ├── service/
-│   ├── api/          # API Lambda (POST /expenses, GET /report/expense)
+│   ├── api/          # API Lambda (POST /expense, GET /report/expense)
 │   ├── batch/        # Batch Lambda (monthly aggregation + S3 export)
 │   ├── shared/       # Shared models, config, database
 │   └── utils/        # Utility functions
@@ -30,14 +30,14 @@ A serverless backend built on AWS Lambda for logging expenses and investments, w
 
 ## Lambda Functions
 
-| Function | Purpose |
-|----------|---------|
-| `lambda-home-api` | REST API for expenses and reports |
-| `lambda-home-batch` | Monthly aggregation (1st of month, Toronto ET) |
+| Function | Layer | Purpose |
+|----------|-------|---------|
+| `HomeApp-LambdaFunction-APIs` | `homeapp-api-layer` | REST API for expenses and reports |
+| `HomeApp-LambdaFunction-Batch` | `homeapp-batch-layer` | Monthly aggregation (1st of month, Toronto ET) |
 
 ## API Endpoints
 
-- `POST /expenses` - Log expense/earning transaction
+- `POST /expense` - Log expense/earning transaction
 - `GET /report/expense` - Get aggregated reports
 
 ## Development

@@ -21,9 +21,9 @@ A serverless backend designed for high extensibility, allowing for the logging o
 | **API Gateway** | AWS HTTP API |
 | **Data Validation** | Pydantic v2 |
 | **Database** | MongoDB Atlas (PyMongo - Synchronous) |
-| **Storage** | S3 (Parquet archives) |
+| **Storage** | S3 (Parquet archives via Polars) |
 | **Scheduler** | EventBridge Scheduler |
-| **Lambda Layer** | Pre-configured with `aws-lambda-powertools`, `pydantic`, `pymongo` |
+| **Lambda Layers** | API layer (powertools, pydantic, pymongo), Batch layer (+ polars) |
 | **CI/CD** | GitHub Actions (zip-and-upload deployment) |
 | **Testing** | pytest |
 
@@ -123,8 +123,8 @@ A serverless backend designed for high extensibility, allowing for the logging o
 
 | Function | Description |
 |----------|-------------|
-| `lambda-home-api` | API Lambda (POST /expense, GET /report/expense) |
-| `lambda-home-batch` | Batch Lambda (monthly aggregation + S3 export) |
+| `HomeApp-LambdaFunction-APIs` | API Lambda (POST /expense, GET /report/expense) |
+| `HomeApp-LambdaFunction-Batch` | Batch Lambda (monthly aggregation + S3 export) |
 
 ## 7. Project Structure
 

@@ -29,8 +29,8 @@ homeapp is a serverless personal finance tracking backend built on AWS Lambda. I
 
 | Function | Purpose | Trigger |
 |----------|---------|---------|
-| `lambda-home-api` | REST API (expenses, reports) | API Gateway HTTP API |
-| `lambda-home-batch` | Monthly aggregation & S3 archival | EventBridge (1st of month, Toronto ET) |
+| `HomeApp-LambdaFunction-APIs` | REST API (expenses, reports) | API Gateway HTTP API |
+| `HomeApp-LambdaFunction-Batch` | Monthly aggregation & S3 archival | EventBridge (1st of month, Toronto ET) |
 
 ---
 
@@ -51,8 +51,8 @@ Both Lambda functions share:
 | **Lambda** | Compute for API and batch processing |
 | **API Gateway (HTTP API)** | REST API (rate: 5/sec, quota: 100/day) |
 | **EventBridge Scheduler** | Monthly batch trigger |
-| **S3** | Parquet storage for transaction archival |
-| **Lambda Layer** | Shared dependencies |
+| **S3** | Parquet storage for transaction archival (via Polars) |
+| **Lambda Layers** | Separate layers for API and Batch functions |
 
 ---
 
@@ -99,7 +99,7 @@ LambdaApps/
 ### Expense Logging
 
 1. Client → POST /expense with JSON
-2. API Gateway → lambda-home-api
+2. API Gateway → HomeApp-LambdaFunction-APIs
 3. Validate via Pydantic
 4. Insert to MongoDB `expenses` collection
 5. Return 201 with expense_id
@@ -107,13 +107,13 @@ LambdaApps/
 ### Report Query
 
 1. Client → GET /report/expense with query params
-2. API Gateway → lambda-home-api
+2. API Gateway → HomeApp-LambdaFunction-APIs
 3. Query MongoDB `reports` collection
 4. Return aggregated data
 
 ### Monthly Batch
 
-1. EventBridge triggers lambda-home-batch (1st of month, 00:00 Toronto ET)
+1. EventBridge triggers HomeApp-LambdaFunction-Batch (1st of month, 00:00 Toronto ET)
 2. Fetch previous month's expenses
 3. Aggregate: total expense, category breakdown, total earning
 4. Upsert to MongoDB `reports` collection
