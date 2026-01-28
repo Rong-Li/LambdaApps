@@ -1,0 +1,126 @@
+# API Specification
+
+## Base Configuration
+
+| Property | Value |
+|----------|-------|
+| **API Type** | AWS API Gateway HTTP API |
+| **Base URL** | `https://{api-id}.execute-api.{region}.amazonaws.com` |
+| **Content-Type** | `application/json` |
+| **Rate Limit** | 5 requests per second |
+| **Daily Quota** | 100 requests per day |
+
+---
+
+## Endpoints
+
+### POST /expenses
+
+Log a new expense or earning transaction.
+
+#### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `amount` | float | ✅ | Transaction amount (positive) |
+| `category` | enum | ✅ | See category values below |
+| `transaction_type` | enum | ✅ | `Credit` or `Debit` |
+| `date` | string | ✅ | ISO 8601 date (`YYYY-MM-DD`) |
+| `description` | string | ❌ | Optional description |
+
+#### Category Values
+
+`Groceries`, `EatOut`, `Transportation`, `Mortgage`, `Utilities`, `Shopping`, `Gas`, `Insurance`
+
+#### Transaction Type Values
+
+| Value | Meaning |
+|-------|---------|
+| `Credit` | Income / Earning |
+| `Debit` | Expense / Spending |
+
+#### Responses
+
+| Status | Description |
+|--------|-------------|
+| `201 Created` | Expense created, returns `expense_id` |
+| `422 Unprocessable Entity` | Validation error |
+
+---
+
+### GET /report/expense
+
+Retrieve aggregated financial summary.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `start_date` | string | ✅ | Start date (`YYYY-MM-DD`) |
+| `end_date` | string | ✅ | End date (`YYYY-MM-DD`) |
+| `category` | enum | ❌ | Filter by category (omit for all) |
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `start_date` | string | Query start date |
+| `end_date` | string | Query end date |
+| `category_filter` | string | Applied category filter (or null) |
+| `reports` | array | List of monthly reports |
+
+#### Report Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `month` | string | Month (YYYY-MM) |
+| `total_expense` | float | Sum of Debit transactions |
+| `total_earning` | float | Sum of Credit transactions |
+| `net` | float | total_earning - total_expense |
+| `expense_by_category` | object | Breakdown by category |
+
+#### Responses
+
+| Status | Description |
+|--------|-------------|
+| `200 OK` | Returns reports (may be empty array) |
+| `422 Unprocessable Entity` | Invalid date format or range |
+
+---
+
+### POST /investments (Future)
+
+Log an investment transaction.
+
+#### Request Body (Planned)
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `ticker` | string | ✅ | Stock/asset symbol |
+| `asset_class` | enum | ✅ | Type of asset |
+| `price` | float | ✅ | Price per unit |
+| `quantity` | float | ✅ | Number of units |
+| `transaction_type` | enum | ✅ | `Buy` or `Sell` |
+| `transaction_date` | string | ✅ | Date (`YYYY-MM-DD`) |
+| `broker_account` | string | ❌ | Broker identifier |
+
+---
+
+## Error Responses
+
+### Format
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `statusCode` | int | HTTP status code |
+| `message` | string | Error description |
+
+### Status Codes
+
+| Code | Meaning |
+|------|---------|
+| `200` | OK |
+| `201` | Created |
+| `400` | Bad Request |
+| `422` | Validation Error |
+| `500` | Internal Server Error |
