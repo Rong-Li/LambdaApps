@@ -1,0 +1,70 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  PYTHON_VERSION: '3.14'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: 'latest'
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Run tests
+        run: uv run pytest tests/unit/ -v --cov=service --cov-report=term-missing
+
+  deploy:
+    name: Deploy
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Package API function code
+        run: |
+          mkdir -p dist/api
+          cp -r service/api service/shared service/__init__.py dist/api/
+
+      - name: Package Batch function code
+        run: |
+          mkdir -p dist/batch
+          cp -r service/batch service/shared service/utils service/__init__.py dist/batch/
+
+      - name: Deploy API function
+        uses: aws-actions/aws-lambda-deploy@v1
+        with:
+          function-name: HomeApp-LambdaFunction-APIs
+          code-artifacts-dir: ./dist/api
+
+      - name: Deploy Batch function
+        uses: aws-actions/aws-lambda-deploy@v1
+        with:
+          function-name: HomeApp-LambdaFunction-Batch
+          code-artifacts-dir: ./dist/batch
