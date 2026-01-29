@@ -25,7 +25,7 @@ class MongoSettings(BaseSettings):
 class S3Settings(BaseSettings):
     """S3 settings loaded from environment variables."""
 
-    bucket_name: str = 'homeapp-archive'
+    bucket_name: str = 'rong-li-bucket'
 
     model_config = {'env_prefix': 'S3_', 'env_file': '.env', 'env_file_encoding': 'utf-8', 'extra': 'ignore'}
 
