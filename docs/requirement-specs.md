@@ -2,7 +2,7 @@
 
 > **Status:** Finalized  
 > **Last Updated:** 2026-01-28  
-> **Related Docs:** [Architecture](./01-architecture.md) | [API Spec](./02-api-specification.md) | [Data Models](./03-data-models.md) | [Batch Job](./04-batch-job.md) | [Deployment](./05-deployment.md) | [Testing](./06-testing.md)
+> **Related Docs:** [Architecture](./01-architecture.md) | [API Spec](./02-api-specification.md) | [Data Models](./03-data-models.md) | [Batch Job](./04-batch-job.md) | [Deployment](./05-deployment.md)
 
 ---
 

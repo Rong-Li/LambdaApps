@@ -2,7 +2,150 @@
 
 from unittest.mock import MagicMock, patch
 
-from service.api.routes.expenses import create_expense, router
+from service.api.routes.expenses import create_expense, get_expenses, router
+
+
+class TestGetExpenses:
+    """Tests for GET /expense endpoint."""
+
+    @patch('service.api.routes.expenses.mongo_get_expenses')
+    def test_get_expenses_success(self, mock_mongo_get_expenses, sample_expense_document):
+        """Test successful list returns 200 with expense list."""
+        mock_cursor = iter([sample_expense_document])
+        mock_mongo_get_expenses.return_value = mock_cursor
+
+        mock_event = MagicMock()
+        mock_event.query_string_parameters = {
+            'start_date': '2026-01-01',
+            'end_date': '2026-01-31',
+        }
+        router.current_event = mock_event
+
+        response = get_expenses()
+
+        assert response.status_code == 200
+        assert response.content_type == 'application/json'
+        assert len(response.body) == 1
+        assert response.body[0]['id'] == sample_expense_document['_id']
+        assert response.body[0]['amount'] == sample_expense_document['amount']
+        assert response.body[0]['category'] == sample_expense_document['category']
+        assert response.body[0]['transaction_type'] == sample_expense_document['transaction_type']
+        mock_mongo_get_expenses.assert_called_once()
+
+    @patch('service.api.routes.expenses.mongo_get_expenses')
+    def test_get_expenses_with_filters(self, mock_mongo_get_expenses, sample_expense_document):
+        """Test list with category and transaction_type filters."""
+        mock_mongo_get_expenses.return_value = iter([sample_expense_document])
+
+        mock_event = MagicMock()
+        mock_event.query_string_parameters = {
+            'start_date': '2026-01-01',
+            'end_date': '2026-01-31',
+            'category': 'Groceries',
+            'transaction_type': 'Debit',
+        }
+        router.current_event = mock_event
+
+        response = get_expenses()
+
+        assert response.status_code == 200
+        assert len(response.body) == 1
+        call_kwargs = mock_mongo_get_expenses.call_args[1]
+        assert call_kwargs['category'] == 'Groceries'
+        assert call_kwargs['transaction_type'].value == 'Debit'
+
+    @patch('service.api.routes.expenses.mongo_get_expenses')
+    def test_get_expenses_empty_list(self, mock_mongo_get_expenses):
+        """Test list returns 200 with empty array when no expenses."""
+        mock_mongo_get_expenses.return_value = iter([])
+
+        mock_event = MagicMock()
+        mock_event.query_string_parameters = {'start_date': '2026-01-01', 'end_date': '2026-01-31'}
+        router.current_event = mock_event
+
+        response = get_expenses()
+
+        assert response.status_code == 200
+        assert response.body == []
+
+    @patch('service.api.routes.expenses.mongo_get_expenses')
+    def test_get_expenses_missing_dates(self, mock_mongo_get_expenses):
+        """Test missing start_date or end_date returns 422."""
+        mock_event = MagicMock()
+        mock_event.query_string_parameters = {'start_date': '2026-01-01'}
+        router.current_event = mock_event
+
+        response = get_expenses()
+
+        assert response.status_code == 422
+        assert 'start_date and end_date are required' in response.body['detail']
+        mock_mongo_get_expenses.assert_not_called()
+
+    @patch('service.api.routes.expenses.mongo_get_expenses')
+    def test_get_expenses_invalid_date_format(self, mock_mongo_get_expenses):
+        """Test invalid date format returns 422."""
+        mock_event = MagicMock()
+        mock_event.query_string_parameters = {
+            'start_date': '2026-01-01',
+            'end_date': 'not-a-date',
+        }
+        router.current_event = mock_event
+
+        response = get_expenses()
+
+        assert response.status_code == 422
+        assert 'Invalid date format' in response.body['detail']
+        mock_mongo_get_expenses.assert_not_called()
+
+    @patch('service.api.routes.expenses.mongo_get_expenses')
+    def test_get_expenses_end_before_start(self, mock_mongo_get_expenses):
+        """Test end_date before start_date returns 422."""
+        mock_event = MagicMock()
+        mock_event.query_string_parameters = {
+            'start_date': '2026-01-31',
+            'end_date': '2026-01-01',
+        }
+        router.current_event = mock_event
+
+        response = get_expenses()
+
+        assert response.status_code == 422
+        assert 'end_date must be on or after start_date' in response.body['detail']
+        mock_mongo_get_expenses.assert_not_called()
+
+    @patch('service.api.routes.expenses.mongo_get_expenses')
+    def test_get_expenses_invalid_category(self, mock_mongo_get_expenses):
+        """Test invalid category returns 422."""
+        mock_event = MagicMock()
+        mock_event.query_string_parameters = {
+            'start_date': '2026-01-01',
+            'end_date': '2026-01-31',
+            'category': 'InvalidCategory',
+        }
+        router.current_event = mock_event
+
+        response = get_expenses()
+
+        assert response.status_code == 422
+        assert 'Invalid category' in response.body['detail']
+        mock_mongo_get_expenses.assert_not_called()
+
+    @patch('service.api.routes.expenses.mongo_get_expenses')
+    def test_get_expenses_invalid_transaction_type(self, mock_mongo_get_expenses):
+        """Test invalid transaction_type returns 422."""
+        mock_event = MagicMock()
+        mock_event.query_string_parameters = {
+            'start_date': '2026-01-01',
+            'end_date': '2026-01-31',
+            'transaction_type': 'Invalid',
+        }
+        router.current_event = mock_event
+
+        response = get_expenses()
+
+        assert response.status_code == 422
+        assert 'Invalid transaction_type' in response.body['detail']
+        mock_mongo_get_expenses.assert_not_called()
 
 
 class TestCreateExpense:

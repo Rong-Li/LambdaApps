@@ -1,15 +1,17 @@
 """MongoDB database connection manager."""
 
+from datetime import datetime
 from functools import lru_cache
 
 from aws_lambda_powertools import Logger
 from pymongo import MongoClient
 from pymongo.collection import Collection
+from pymongo.cursor import Cursor
 from pymongo.database import Database
 from pymongo.results import InsertOneResult
 
 from service.shared.config import get_mongo_settings
-from service.shared.models.enums import CollectionName
+from service.shared.models.enums import CollectionName, TransactionType
 from service.shared.models.expense import Expense
 
 logger = Logger()
@@ -82,3 +84,33 @@ def mongo_insert(
         logger.warning(f'Insert not acknowledged for {collection_name}')
 
     return result
+
+
+def mongo_get_expenses(
+    collection_name: CollectionName,
+    start_date: datetime,
+    end_date: datetime,
+    category: str | None = None,
+    transaction_type: TransactionType | None = None,
+) -> Cursor:
+    """Get expenses in a date range with optional filters.
+
+    Args:
+        collection_name: Name of the collection
+        start_date: Start of date range (inclusive)
+        end_date: End of date range (inclusive)
+        category: Optional category filter (None = all)
+        transaction_type: Optional Credit or Debit (None = all)
+
+    Returns:
+        Cursor over matching documents
+    """
+    query: dict = {'created_at': {'$gte': start_date, '$lte': end_date}}
+    if category is not None:
+        query['category'] = category
+    if transaction_type is not None:
+        query['transaction_type'] = transaction_type.value
+
+    db = get_database()
+    collection = db[collection_name]
+    return collection.find(query).sort('created_at', -1)

@@ -75,4 +75,3 @@ See [docs/](./docs/) for detailed documentation:
 - [Data Models](./docs/03-data-models.md)
 - [Batch Job](./docs/04-batch-job.md)
 - [Deployment](./docs/05-deployment.md)
-- [Testing](./docs/06-testing.md)

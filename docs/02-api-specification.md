@@ -47,6 +47,40 @@ Log a new expense or earning transaction.
 
 ---
 
+### GET /expense
+
+List expenses in a date range with optional filters.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `start_date` | string | ✅ | Start date (`YYYY-MM-DD`) |
+| `end_date` | string | ✅ | End date (`YYYY-MM-DD`) |
+| `category` | enum | ❌ | Filter by category (omit for all) |
+| `transaction_type` | enum | ❌ | `Credit` or `Debit` (omit for all) |
+
+#### Response
+
+Array of expense objects (same shape as Expense):
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Expense id |
+| `amount` | float | Amount |
+| `category` | string | Category value |
+| `transaction_type` | string | `Credit` or `Debit` |
+| `created_at` | string | ISO 8601 datetime |
+
+#### Responses
+
+| Status | Description |
+|--------|-------------|
+| `200 OK` | List of expenses (newest first) |
+| `422 Unprocessable Entity` | Invalid date format, range, category, or transaction_type |
+
+---
+
 ### GET /report/expense
 
 Retrieve aggregated financial summary.
