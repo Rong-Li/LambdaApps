@@ -7,9 +7,14 @@ wheels/
 python/
 *.zip
 *.egg-info
+.DS_Store
 
 # Virtual environments
 .venv
+
+# Environment files
+.env
+.env.*
 
 # IDE
 .idea/

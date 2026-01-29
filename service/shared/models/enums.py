@@ -21,3 +21,9 @@ class TransactionType(str, Enum):
 
     Credit = 'Credit'  # Income / Earning
     Debit = 'Debit'  # Expense / Spending
+
+
+class CollectionName(str, Enum):
+    """MongoDB collection names."""
+
+    Expense = 'expense'

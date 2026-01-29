@@ -8,6 +8,7 @@ from pymongo.database import Database
 from pymongo.results import InsertOneResult
 
 from service.shared.config import get_mongo_settings
+from service.shared.models.enums import CollectionName
 
 logger = Logger()
 
@@ -16,17 +17,17 @@ logger = Logger()
 def get_client() -> MongoClient:
     """Get cached MongoDB client instance."""
     settings = get_mongo_settings()
-    return MongoClient(settings.mongodb_uri)
+    return MongoClient(settings.mongo_uri)
 
 
 def get_database() -> Database:
     """Get MongoDB database instance."""
     settings = get_mongo_settings()
     client = get_client()
-    return client[settings.mongodb_database]
+    return client[settings.database]
 
 
-def mongo_insert(document: dict, collection_name: str) -> InsertOneResult:
+def mongo_insert(document: dict, collection_name: CollectionName) -> InsertOneResult:
     """Insert a document into a MongoDB collection and log the result.
 
     Args:

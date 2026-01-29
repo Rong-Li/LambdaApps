@@ -2,24 +2,32 @@
 
 from functools import lru_cache
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings
 
 
 class MongoSettings(BaseSettings):
     """MongoDB settings loaded from environment variables."""
 
-    mongodb_uri: str
-    mongodb_database: str = 'homeapp'
+    host: str
+    username: str
+    password: SecretStr
+    database: str = 'homeapp'
 
-    model_config = {'env_file': '.env', 'env_file_encoding': 'utf-8'}
+    model_config = {'env_prefix': 'MONGO_', 'env_file': '.env', 'env_file_encoding': 'utf-8', 'extra': 'ignore'}
+
+    @property
+    def mongo_uri(self) -> str:
+        """Construct MongoDB URI from components."""
+        return f'mongodb+srv://{self.username}:{self.password.get_secret_value()}@{self.host}'
 
 
 class S3Settings(BaseSettings):
     """S3 settings loaded from environment variables."""
 
-    s3_bucket_name: str = 'homeapp-archive'
+    bucket_name: str = 'homeapp-archive'
 
-    model_config = {'env_file': '.env', 'env_file_encoding': 'utf-8'}
+    model_config = {'env_prefix': 'S3_', 'env_file': '.env', 'env_file_encoding': 'utf-8', 'extra': 'ignore'}
 
 
 @lru_cache
