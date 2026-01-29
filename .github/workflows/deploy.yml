@@ -50,12 +50,12 @@ jobs:
       - name: Package API function code
         run: |
           mkdir -p dist/api
-          cp -r service/api service/shared service/__init__.py dist/api/
+          cp -r service/ dist/api/
 
       - name: Package Batch function code
         run: |
           mkdir -p dist/batch
-          cp -r service/batch service/shared service/utils service/__init__.py dist/batch/
+          cp -r service/ dist/batch/
 
       - name: Deploy API function
         uses: aws-actions/aws-lambda-deploy@v1
