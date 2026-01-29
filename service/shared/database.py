@@ -4,13 +4,20 @@ from functools import lru_cache
 
 from aws_lambda_powertools import Logger
 from pymongo import MongoClient
+from pymongo.collection import Collection
 from pymongo.database import Database
 from pymongo.results import InsertOneResult
 
 from service.shared.config import get_mongo_settings
 from service.shared.models.enums import CollectionName
+from service.shared.models.expense import Expense
 
 logger = Logger()
+
+# Map collection names to their index definitions
+COLLECTION_INDEXES = {
+    CollectionName.Expense: Expense.indexes,
+}
 
 
 @lru_cache
@@ -27,18 +34,47 @@ def get_database() -> Database:
     return client[settings.database]
 
 
-def mongo_insert(document: dict, collection_name: CollectionName) -> InsertOneResult:
+def ensure_indexes(collection: Collection, indexes: list) -> None:
+    """Ensure indexes exist for a collection by checking MongoDB.
+
+    Args:
+        collection: PyMongo collection instance
+        indexes: List of IndexModel definitions to ensure
+    """
+    # Get existing index names from MongoDB
+    existing_indexes = {idx['name'] for idx in collection.list_indexes()}
+
+    # Filter to only indexes that don't exist yet
+    missing_indexes = [idx for idx in indexes if idx.document['name'] not in existing_indexes]
+
+    if missing_indexes:
+        collection.create_indexes(missing_indexes)
+        logger.info(f'Created indexes for {collection.name}', extra={'indexes': [idx.document['name'] for idx in missing_indexes]})
+
+
+def mongo_insert(
+    document: dict,
+    collection_name: CollectionName,
+    ensure_indexes_flag: bool = False,
+) -> InsertOneResult:
     """Insert a document into a MongoDB collection and log the result.
 
     Args:
         document: Dict to insert (should be validated before calling)
         collection_name: Name of the collection
+        ensure_indexes_flag: If True, ensure indexes exist before insert (default: True)
 
     Returns:
         InsertOneResult from MongoDB
     """
     db = get_database()
-    result = db[collection_name].insert_one(document)
+    collection = db[collection_name]
+
+    indexes = COLLECTION_INDEXES.get(collection_name)
+    if ensure_indexes_flag and indexes:
+        ensure_indexes(collection, indexes)
+
+    result = collection.insert_one(document)
 
     if result.acknowledged:
         logger.info(f'Successfully inserted 1 record into {collection_name}', extra={'inserted_id': str(result.inserted_id)})

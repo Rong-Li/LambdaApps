@@ -1,11 +1,16 @@
 """Expense model definitions."""
 
 from datetime import datetime
+from typing import ClassVar
 
 from pydantic import BaseModel, Field
+from pymongo import DESCENDING, IndexModel
 
 from service.shared.models.enums import Category, TransactionType
 from service.shared.models.types import PositiveAmount
+
+# TTL: 2 years in seconds (365 * 2 * 24 * 60 * 60)
+TTL_TWO_YEARS = 63072000
 
 
 class ExpenseInput(BaseModel):
@@ -23,6 +28,10 @@ class Expense(ExpenseInput):
     id: str = Field(..., alias='_id')
 
     model_config = {'populate_by_name': True}
+
+    indexes: ClassVar[list[IndexModel]] = [
+        IndexModel([('created_at', DESCENDING)], expireAfterSeconds=TTL_TWO_YEARS, name='created_at_ttl'),
+    ]
 
 
 class ExpenseCreateResponse(BaseModel):
