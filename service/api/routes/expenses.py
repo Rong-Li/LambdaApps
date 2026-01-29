@@ -118,7 +118,8 @@ def create_expense() -> Response:
             body={'detail': e.errors()},
         )
 
-    result = mongo_insert(expense_data.model_dump(mode='json'), CollectionName.Expense)
+    data = expense_data.model_dump()
+    result = mongo_insert(data, CollectionName.Expense)
 
     response = ExpenseCreateResponse(expense_id=str(result.inserted_id))
     return Response(
@@ -133,18 +134,31 @@ if __name__ == '__main__':
 
     from service.shared.models.enums import Category, TransactionType
 
-    # Create test expense data
+    # --- Test POST /expense ---
     test_expense = ExpenseInput(
         amount=42.50,
         category=Category.Groceries,
         transaction_type=TransactionType.Debit,
         created_at=datetime.now(),
     )
+    mock_event = type('Event', (), {'json_body': test_expense.model_dump(mode='json')})()
+    router.current_event = mock_event
 
-    print(f'Inserting test expense: {test_expense.model_dump(mode="json")}')
+    print('\nPOST /expense')
+    print(f'Body: {test_expense.model_dump(mode="json")}')
+    result = create_expense()
+    print(f'Status: {result.status_code}')
+    print(f'Body: {result.body}')
 
-    # Insert into MongoDB
-    result = mongo_insert(test_expense.model_dump(mode='json'), CollectionName.Expense)
+    # --- Test GET /expense ---
+    mock_event = type('Event', (), {'query_string_parameters': {'start_date': '2026-01-01', 'end_date': '2026-01-31'}})()
+    router.current_event = mock_event
 
-    print('Inserted successfully!')
-    print(f'Inserted ID: {result.inserted_id}')
+    print('GET /expense?start_date=2026-01-01&end_date=2026-01-31')
+    response = get_expenses()
+    print(f'Status: {response.status_code}')
+    print(f'Count: {len(response.body)}')
+    for i, exp in enumerate(response.body[:5]):
+        print(f'  [{i}] {exp}')
+    if len(response.body) > 5:
+        print(f'  ... and {len(response.body) - 5} more')

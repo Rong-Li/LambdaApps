@@ -1,5 +1,6 @@
 """MongoDB database connection manager."""
 
+from datetime import datetime
 from functools import lru_cache
 
 from aws_lambda_powertools import Logger
@@ -9,13 +10,9 @@ from pymongo.cursor import Cursor
 from pymongo.database import Database
 from pymongo.results import InsertOneResult
 
-from datetime import datetime
-
 from service.shared.config import get_mongo_settings
-from service.shared.models.enums import CollectionName, TransactionType
+from service.shared.models.enums import Category, CollectionName, TransactionType
 from service.shared.models.expense import Expense
-from service.shared.models.enums import Category
-
 
 logger = Logger()
 
