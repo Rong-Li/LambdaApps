@@ -92,6 +92,8 @@ def get_expenses() -> Response:
                 category=Category(doc['category']),
                 transaction_type=TransactionType(doc['transaction_type']),
                 created_at=doc['created_at'],
+                merchant=doc.get('merchant'),
+                description=doc.get('description'),
             ),
         )
 

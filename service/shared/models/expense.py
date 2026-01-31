@@ -20,6 +20,8 @@ class ExpenseInput(BaseModel):
     category: Category
     transaction_type: TransactionType
     created_at: datetime = Field(..., description='Transaction timestamp')
+    merchant: str | None = None
+    description: str | None = None
 
 
 class Expense(ExpenseInput):

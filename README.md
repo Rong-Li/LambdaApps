@@ -57,13 +57,13 @@ export S3_BUCKET_NAME="homeapp-archive"
 ### Run Tests
 
 ```bash
-uv run pytest
+uv run pytest tests/
 ```
 
 ### Run Linter
 
 ```bash
-uv run ruff check service/
+uv tool run ruff check --fix ./ && uv tool run ruff format ./ 
 ```
 
 ## Documentation
