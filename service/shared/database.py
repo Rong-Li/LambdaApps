@@ -4,11 +4,13 @@ from datetime import datetime
 from functools import lru_cache
 
 from aws_lambda_powertools import Logger
+from bson.errors import InvalidId
+from bson.objectid import ObjectId
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.cursor import Cursor
 from pymongo.database import Database
-from pymongo.results import InsertOneResult
+from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
 from service.shared.config import get_mongo_settings
 from service.shared.models.enums import Category, CollectionName, TransactionType
@@ -130,3 +132,75 @@ def mongo_get_expenses(
     db = get_database()
     collection = db[collection_name]
     return collection.find(query).sort('created_at', -1)
+
+
+def _parse_expense_id(expense_id: str):
+    """Convert expense_id string to ObjectId if valid 24-char hex, else return as-is."""
+    if len(expense_id) == 24:
+        try:
+            return ObjectId(expense_id)
+        except InvalidId:
+            pass
+    return expense_id
+
+
+def mongo_update_expense(
+    collection_name: CollectionName,
+    expense_id: str,
+    update_doc: dict,
+) -> UpdateResult | None:
+    """Update a single expense by id.
+
+    Only the fields in update_doc are set; other fields (e.g. receipt_id) are
+    left unchanged.
+
+    Args:
+        collection_name: Name of the collection
+        expense_id: Expense document id (ObjectId string or string id)
+        update_doc: Document fields to set (validated dict, no _id)
+
+    Returns:
+        UpdateResult if a document was matched and updated, None if not found
+    """
+    doc_id = _parse_expense_id(expense_id)
+    # Never update receipt_id; leave it unchanged on the document
+    update_doc = {k: v for k, v in update_doc.items() if k != 'receipt_id'}
+    db = get_database()
+    collection = db[collection_name]
+    result = collection.update_one(
+        {'_id': doc_id},
+        {'$set': update_doc},
+    )
+    if result.matched_count == 0:
+        return None
+    logger.info(
+        f'Updated expense in {collection_name}',
+        extra={'expense_id': expense_id},
+    )
+    return result
+
+
+def mongo_delete_expense(
+    collection_name: CollectionName,
+    expense_id: str,
+) -> DeleteResult | None:
+    """Delete a single expense by id.
+
+    Args:
+        collection_name: Name of the collection
+        expense_id: Expense document id (ObjectId string or string id)
+
+    Returns:
+        DeleteResult if a document was deleted, None if not found
+    """
+    doc_id = _parse_expense_id(expense_id)
+    db = get_database()
+    collection = db[collection_name]
+    result = collection.delete_one({'_id': doc_id})
+    if result.deleted_count == 0:
+        return None
+    logger.info(
+        f'Deleted expense from {collection_name}',
+        extra={'expense_id': expense_id},
+    )
+    return result

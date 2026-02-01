@@ -5,7 +5,7 @@ from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.utilities.parser import parse
 from pydantic import ValidationError
 
-from service.shared.database import mongo_get_expenses, mongo_insert
+from service.shared.database import mongo_delete_expense, mongo_get_expenses, mongo_insert, mongo_update_expense
 from service.shared.models import Expense, ExpenseCreateResponse, ExpenseInput, GetExpenseParams
 from service.shared.models.enums import Category, CollectionName, TransactionType
 
@@ -87,6 +87,68 @@ def create_expense() -> Response:
         content_type='application/json',
         body=response.model_dump(),
     )
+
+
+@router.put('/<<id>>')
+def update_expense(id: str) -> Response:
+    """Update an existing expense by id.
+
+    PUT /expense/{id}
+    Body: amount, category, transaction_type, created_at, merchant?, description?
+    """
+    try:
+        body = router.current_event.json_body
+        expense_data = ExpenseInput(**body)
+    except ValidationError as e:
+        return Response(
+            status_code=422,
+            content_type='application/json',
+            body={'detail': e.errors()},
+        )
+
+    update_doc = expense_data.model_dump()
+    result = mongo_update_expense(CollectionName.Expense, id, update_doc)
+
+    if result is None:
+        return Response(
+            status_code=404,
+            content_type='application/json',
+            body={'detail': 'Expense not found'},
+        )
+
+    updated = Expense(
+        _id=id,
+        amount=expense_data.amount,
+        category=expense_data.category,
+        transaction_type=expense_data.transaction_type,
+        created_at=expense_data.created_at,
+        merchant=expense_data.merchant,
+        description=expense_data.description,
+        receipt_id=None,
+    )
+    return Response(
+        status_code=200,
+        content_type='application/json',
+        body=updated.model_dump(mode='json'),
+    )
+
+
+@router.delete('/<<id>>')
+def delete_expense(id: str) -> Response:
+    """Delete an expense by id.
+
+    DELETE /expense/{id}
+    """
+    result = mongo_delete_expense(CollectionName.Expense, id)
+
+    if result is None:
+        return Response(
+            status_code=404,
+            content_type='application/json',
+            body={'detail': 'Expense not found'},
+        )
+
+    return Response(status_code=204, content_type='application/json', body='')
 
 
 if __name__ == '__main__':

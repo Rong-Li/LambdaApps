@@ -84,6 +84,56 @@ Array of expense objects (same shape as Expense):
 
 ---
 
+### PUT /expense/{id}
+
+Update an existing expense by id.
+
+#### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Expense id (MongoDB ObjectId or string id) |
+
+#### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `amount` | float | ✅ | Transaction amount (positive) |
+| `category` | enum | ✅ | See category values below |
+| `transaction_type` | enum | ✅ | `Credit` or `Debit` |
+| `created_at` | string | ✅ | ISO 8601 datetime (`YYYY-MM-DDTHH:MM:SS` or with Z) |
+| `merchant` | string | ❌ | Merchant name |
+| `description` | string | ❌ | Description |
+
+#### Responses
+
+| Status | Description |
+|--------|-------------|
+| `200 OK` | Expense updated, returns updated expense object |
+| `404 Not Found` | Expense not found |
+| `422 Unprocessable Entity` | Validation error |
+
+---
+
+### DELETE /expense/{id}
+
+Delete an expense by id.
+
+#### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Expense id (MongoDB ObjectId or string id) |
+
+#### Responses
+
+| Status | Description |
+|--------|-------------|
+| `204 No Content` | Expense deleted |
+| `404 Not Found` | Expense not found |
+
+---
+
 ### GET /report/expense
 
 Retrieve aggregated financial summary.

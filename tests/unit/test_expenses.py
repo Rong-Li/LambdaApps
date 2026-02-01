@@ -2,7 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
-from service.api.routes.expenses import create_expense, get_expenses, router
+from service.api.routes.expenses import create_expense, delete_expense, get_expenses, router, update_expense
+from service.shared.models.enums import CollectionName
 
 
 class TestGetExpenses:
@@ -245,3 +246,107 @@ class TestCreateExpense:
         assert response.status_code == 201
         call_args = mock_mongo_insert.call_args[0][0]
         assert call_args['amount'] == 46.0
+
+
+class TestUpdateExpense:
+    """Tests for PUT /expense/{id} endpoint."""
+
+    @patch('service.api.routes.expenses.mongo_update_expense')
+    def test_update_expense_success(self, mock_mongo_update):
+        """Test successful expense update returns 200 with updated expense."""
+        mock_result = MagicMock()
+        mock_result.matched_count = 1
+        mock_mongo_update.return_value = mock_result
+
+        expense_id = '507f1f77bcf86cd799439011'
+        body = {
+            'amount': 90.00,
+            'category': 'Groceries',
+            'transaction_type': 'Debit',
+            'created_at': '2026-01-30T14:30:00',
+            'merchant': 'Costco',
+            'description': 'Weekly groceries - updated',
+        }
+        mock_event = MagicMock()
+        mock_event.json_body = body
+        router.current_event = mock_event
+
+        response = update_expense(expense_id)
+
+        assert response.status_code == 200
+        assert response.content_type == 'application/json'
+        assert response.body['id'] == expense_id
+        assert response.body['amount'] == 90.00
+        assert response.body['merchant'] == 'Costco'
+        assert response.body['description'] == 'Weekly groceries - updated'
+        mock_mongo_update.assert_called_once()
+        call_args = mock_mongo_update.call_args[0]
+        assert call_args[0] == CollectionName.Expense
+        assert call_args[1] == expense_id
+        update_doc = call_args[2]
+        assert update_doc['amount'] == 90.00
+        assert update_doc['merchant'] == 'Costco'
+        assert update_doc['description'] == 'Weekly groceries - updated'
+
+    @patch('service.api.routes.expenses.mongo_update_expense')
+    def test_update_expense_not_found(self, mock_mongo_update):
+        """Test update with non-existent id returns 404."""
+        mock_mongo_update.return_value = None
+
+        mock_event = MagicMock()
+        mock_event.json_body = {
+            'amount': 90.00,
+            'category': 'Groceries',
+            'transaction_type': 'Debit',
+            'created_at': '2026-01-30T14:30:00',
+        }
+        router.current_event = mock_event
+
+        response = update_expense('nonexistent-id')
+
+        assert response.status_code == 404
+        assert response.body['detail'] == 'Expense not found'
+
+    @patch('service.api.routes.expenses.mongo_update_expense')
+    def test_update_expense_invalid_body(self, mock_mongo_update):
+        """Test update with invalid body returns 422."""
+        mock_event = MagicMock()
+        mock_event.json_body = {
+            'amount': -10.0,
+            'category': 'Groceries',
+            'transaction_type': 'Debit',
+            'created_at': '2026-01-30T14:30:00',
+        }
+        router.current_event = mock_event
+
+        response = update_expense('507f1f77bcf86cd799439011')
+
+        assert response.status_code == 422
+        assert 'detail' in response.body
+        mock_mongo_update.assert_not_called()
+
+
+class TestDeleteExpense:
+    """Tests for DELETE /expense/{id} endpoint."""
+
+    @patch('service.api.routes.expenses.mongo_delete_expense')
+    def test_delete_expense_success(self, mock_mongo_delete):
+        """Test successful delete returns 204."""
+        mock_result = MagicMock()
+        mock_result.deleted_count = 1
+        mock_mongo_delete.return_value = mock_result
+
+        response = delete_expense('507f1f77bcf86cd799439011')
+
+        assert response.status_code == 204
+        mock_mongo_delete.assert_called_once_with(CollectionName.Expense, '507f1f77bcf86cd799439011')
+
+    @patch('service.api.routes.expenses.mongo_delete_expense')
+    def test_delete_expense_not_found(self, mock_mongo_delete):
+        """Test delete with non-existent id returns 404."""
+        mock_mongo_delete.return_value = None
+
+        response = delete_expense('nonexistent-id')
+
+        assert response.status_code == 404
+        assert response.body['detail'] == 'Expense not found'
