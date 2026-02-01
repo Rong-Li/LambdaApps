@@ -78,7 +78,8 @@ class TestGetExpenses:
         response = get_expenses()
 
         assert response.status_code == 422
-        assert 'start_date and end_date are required' in response.body['detail']
+        detail = response.body['detail']
+        assert any(e.get('loc') == ('end_date',) and e.get('type') == 'missing' for e in detail)
         mock_mongo_get_expenses.assert_not_called()
 
     @patch('service.api.routes.expenses.mongo_get_expenses')
@@ -94,7 +95,8 @@ class TestGetExpenses:
         response = get_expenses()
 
         assert response.status_code == 422
-        assert 'Invalid date format' in response.body['detail']
+        detail = response.body['detail']
+        assert any('date' in e.get('msg', '').lower() for e in detail)
         mock_mongo_get_expenses.assert_not_called()
 
     @patch('service.api.routes.expenses.mongo_get_expenses')
@@ -110,7 +112,8 @@ class TestGetExpenses:
         response = get_expenses()
 
         assert response.status_code == 422
-        assert 'end_date must be on or after start_date' in response.body['detail']
+        detail = response.body['detail']
+        assert any('end_date must be on or after start_date' in e.get('msg', '') for e in detail)
         mock_mongo_get_expenses.assert_not_called()
 
     @patch('service.api.routes.expenses.mongo_get_expenses')
@@ -127,7 +130,8 @@ class TestGetExpenses:
         response = get_expenses()
 
         assert response.status_code == 422
-        assert 'Invalid category' in response.body['detail']
+        detail = response.body['detail']
+        assert any(e.get('loc') == ('category',) for e in detail)
         mock_mongo_get_expenses.assert_not_called()
 
     @patch('service.api.routes.expenses.mongo_get_expenses')
@@ -144,7 +148,8 @@ class TestGetExpenses:
         response = get_expenses()
 
         assert response.status_code == 422
-        assert 'Invalid transaction_type' in response.body['detail']
+        detail = response.body['detail']
+        assert any(e.get('loc') == ('transaction_type',) for e in detail)
         mock_mongo_get_expenses.assert_not_called()
 
 

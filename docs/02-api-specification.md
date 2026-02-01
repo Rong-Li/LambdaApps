@@ -59,6 +59,9 @@ List expenses in a date range with optional filters.
 | `end_date` | string | ✅ | End date (`YYYY-MM-DD`) |
 | `category` | enum | ❌ | Filter by category (omit for all) |
 | `transaction_type` | enum | ❌ | `Credit` or `Debit` (omit for all) |
+| `has_receipt` | boolean | ❌ | `true` for expenses with receipt, `false` for without (omit for all) |
+| `min_amount` | float | ❌ | Minimum amount filter (inclusive) |
+| `max_amount` | float | ❌ | Maximum amount filter (inclusive) |
 
 #### Response
 
@@ -77,7 +80,7 @@ Array of expense objects (same shape as Expense):
 | Status | Description |
 |--------|-------------|
 | `200 OK` | List of expenses (newest first) |
-| `422 Unprocessable Entity` | Invalid date format, range, category, or transaction_type |
+| `422 Unprocessable Entity` | Invalid date format, range, category, transaction_type, has_receipt, or amount values |
 
 ---
 

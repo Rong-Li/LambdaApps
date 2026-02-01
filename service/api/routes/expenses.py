@@ -1,13 +1,12 @@
 """Expense routes for the API."""
 
-from datetime import date, datetime, time
-
 from aws_lambda_powertools.event_handler import Response
 from aws_lambda_powertools.event_handler.api_gateway import Router
+from aws_lambda_powertools.utilities.parser import parse
 from pydantic import ValidationError
 
 from service.shared.database import mongo_get_expenses, mongo_insert
-from service.shared.models import Expense, ExpenseCreateResponse, ExpenseInput
+from service.shared.models import Expense, ExpenseCreateResponse, ExpenseInput, GetExpenseParams
 from service.shared.models.enums import Category, CollectionName, TransactionType
 
 router = Router()
@@ -18,84 +17,43 @@ def get_expenses() -> Response:
     """List expenses in a date range with optional filters.
 
     GET /expense?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD&category=...&transaction_type=Credit|Debit
+        &has_receipt=true|false&min_amount=...&max_amount=...
     """
     params = router.current_event.query_string_parameters or {}
 
-    start_date_str = params.get('start_date')
-    end_date_str = params.get('end_date')
-
-    if not start_date_str or not end_date_str:
-        return Response(
-            status_code=422,
-            content_type='application/json',
-            body={'detail': 'start_date and end_date are required'},
-        )
-
     try:
-        start_d = date.fromisoformat(start_date_str)
-        end_d = date.fromisoformat(end_date_str)
-    except ValueError:
+        query_params: GetExpenseParams = parse(model=GetExpenseParams, event=params)
+    except ValidationError as e:
         return Response(
             status_code=422,
             content_type='application/json',
-            body={'detail': 'Invalid date format. Use YYYY-MM-DD'},
+            body={'detail': e.errors()},
         )
-
-    if end_d < start_d:
-        return Response(
-            status_code=422,
-            content_type='application/json',
-            body={'detail': 'end_date must be on or after start_date'},
-        )
-
-    start_date = datetime.combine(start_d, time.min)
-    end_date = datetime.combine(end_d, time.max)
-
-    category_param = params.get('category')
-    category = None
-    if category_param:
-        try:
-            category = Category(category_param).value
-        except ValueError:
-            return Response(
-                status_code=422,
-                content_type='application/json',
-                body={'detail': f'Invalid category: {category_param}'},
-            )
-
-    transaction_type_param = params.get('transaction_type')
-    transaction_type: TransactionType | None = None
-    if transaction_type_param:
-        try:
-            transaction_type = TransactionType(transaction_type_param)
-        except ValueError:
-            return Response(
-                status_code=422,
-                content_type='application/json',
-                body={'detail': f'Invalid transaction_type: {transaction_type_param}. Use Credit or Debit'},
-            )
 
     cursor = mongo_get_expenses(
         CollectionName.Expense,
-        start_date=start_date,
-        end_date=end_date,
-        category=category,
-        transaction_type=transaction_type,
+        start_date=query_params.start_datetime,
+        end_date=query_params.end_datetime,
+        category=query_params.category.value if query_params.category else None,
+        transaction_type=query_params.transaction_type,
+        has_receipt=query_params.has_receipt,
+        min_amount=query_params.min_amount,
+        max_amount=query_params.max_amount,
     )
 
-    items = []
-    for doc in cursor:
-        items.append(
-            Expense(
-                _id=str(doc['_id']),
-                amount=doc['amount'],
-                category=Category(doc['category']),
-                transaction_type=TransactionType(doc['transaction_type']),
-                created_at=doc['created_at'],
-                merchant=doc.get('merchant'),
-                description=doc.get('description'),
-            ),
+    items = [
+        Expense(
+            _id=str(doc['_id']),
+            amount=doc['amount'],
+            category=Category(doc['category']),
+            transaction_type=TransactionType(doc['transaction_type']),
+            created_at=doc['created_at'],
+            merchant=doc.get('merchant'),
+            description=doc.get('description'),
+            receipt_id=doc.get('receipt_id'),
         )
+        for doc in cursor
+    ]
 
     return Response(
         status_code=200,

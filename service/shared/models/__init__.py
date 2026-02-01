@@ -1,7 +1,7 @@
 """Pydantic models for homeapp service."""
 
 from service.shared.models.enums import Category, TransactionType
-from service.shared.models.expense import Expense, ExpenseCreateResponse, ExpenseInput
+from service.shared.models.expense import Expense, ExpenseCreateResponse, ExpenseInput, GetExpenseParams
 from service.shared.models.report import Report, ReportExpenseResponse
 from service.shared.models.types import PositiveAmount
 
@@ -12,6 +12,7 @@ __all__ = [
     'Expense',
     'ExpenseCreateResponse',
     'ExpenseInput',
+    'GetExpenseParams',
     'Report',
     'ReportExpenseResponse',
 ]
