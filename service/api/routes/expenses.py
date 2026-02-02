@@ -90,7 +90,7 @@ def create_expense() -> Response:
     )
 
 
-@router.put('/<<id>>')
+@router.put('/<id>')
 def update_expense(id: str) -> Response:
     """Update an existing expense by id.
 
@@ -135,7 +135,7 @@ def update_expense(id: str) -> Response:
     )
 
 
-@router.delete('/<<id>>')
+@router.delete('/<id>')
 def delete_expense(id: str) -> Response:
     """Delete an expense by id.
 
@@ -186,3 +186,35 @@ if __name__ == '__main__':
         print(f'  [{i}] {exp}')
     if len(response.body) > 5:
         print(f'  ... and {len(response.body) - 5} more')
+
+    # --- Test PUT /expense/{id} ---
+    test_update_id = '697e8068033459f3d1ea907c'
+    test_update_body = {
+        'amount': 99.99,
+        'category': Category.Shopping.value,
+        'transaction_type': TransactionType.Debit.value,
+        'created_at': datetime.now().isoformat(),
+        'merchant': 'Updated Store',
+        'description': 'Updated expense description',
+        'recurring_payment': True,
+    }
+    mock_event = type('Event', (), {'json_body': test_update_body})()
+    router.current_event = mock_event
+
+    print('\nPUT /expense/{id}')
+    print(f'Id: {test_update_id}')
+    print(f'Body: {test_update_body}')
+    result = update_expense(test_update_id)
+    print(f'Status: {result.status_code}')
+    print(f'Body: {result.body}')
+
+    # --- Test DELETE /expense/{id} ---
+    test_delete_id = '697e8068033459f3d1ea907c'
+    mock_event = type('Event', (), {})()
+    router.current_event = mock_event
+
+    print('\nDELETE /expense/{id}')
+    print(f'Id: {test_delete_id}')
+    result = delete_expense(test_delete_id)
+    print(f'Status: {result.status_code}')
+    print(f'Body: {result.body}')
