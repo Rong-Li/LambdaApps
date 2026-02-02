@@ -26,6 +26,7 @@ Log a new expense or earning transaction.
 | `category` | enum | ✅ | See category values below |
 | `transaction_type` | enum | ✅ | `Credit` or `Debit` |
 | `created_at` | string | ✅ | ISO 8601 datetime (`YYYY-MM-DDTHH:MM:SS`) |
+| `recurring_payment` | boolean | ❌ | Whether this is a recurring payment (default: false) |
 
 #### Category Values
 
@@ -74,6 +75,7 @@ Array of expense objects (same shape as Expense):
 | `category` | string | Category value |
 | `transaction_type` | string | `Credit` or `Debit` |
 | `created_at` | string | ISO 8601 datetime |
+| `recurring_payment` | boolean | Whether this is a recurring payment |
 
 #### Responses
 
@@ -104,6 +106,7 @@ Update an existing expense by id.
 | `created_at` | string | ✅ | ISO 8601 datetime (`YYYY-MM-DDTHH:MM:SS` or with Z) |
 | `merchant` | string | ❌ | Merchant name |
 | `description` | string | ❌ | Description |
+| `recurring_payment` | boolean | ❌ | Whether this is a recurring payment (default: false) |
 
 #### Responses
 

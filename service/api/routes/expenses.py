@@ -51,6 +51,7 @@ def get_expenses() -> Response:
             merchant=doc.get('merchant'),
             description=doc.get('description'),
             receipt_id=doc.get('receipt_id'),
+            recurring_payment=doc.get('recurring_payment', False),
         )
         for doc in cursor
     ]
@@ -125,6 +126,7 @@ def update_expense(id: str) -> Response:
         merchant=expense_data.merchant,
         description=expense_data.description,
         receipt_id=None,
+        recurring_payment=expense_data.recurring_payment,
     )
     return Response(
         status_code=200,

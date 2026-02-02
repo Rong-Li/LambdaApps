@@ -26,6 +26,7 @@ def sample_expense_document():
         'category': 'Groceries',
         'transaction_type': 'Debit',
         'created_at': datetime(2026, 1, 28),
+        'recurring_payment': False,
     }
 
 
