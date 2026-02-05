@@ -40,3 +40,24 @@ def get_mongo_settings() -> MongoSettings:
 def get_s3_settings() -> S3Settings:
     """Get cached S3 settings instance."""
     return S3Settings()
+
+
+class AuthSettings(BaseSettings):
+    """Authentication settings loaded from environment variables."""
+
+    bearer_token: str = ''  # Comma-separated list of valid tokens
+
+    model_config = {'env_prefix': 'HOMEAPP_', 'env_file': '.env', 'env_file_encoding': 'utf-8', 'extra': 'ignore'}
+
+    @property
+    def bearer_tokens(self) -> list[str]:
+        """Return list of valid bearer tokens (supports comma-separated values)."""
+        if not self.bearer_token:
+            return []
+        return [t.strip() for t in self.bearer_token.split(',') if t.strip()]
+
+
+@lru_cache
+def get_auth_settings() -> AuthSettings:
+    """Get cached Auth settings instance."""
+    return AuthSettings()

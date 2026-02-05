@@ -5,6 +5,7 @@ from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
 from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
+from service.api.auth import require_auth
 from service.api.routes import expenses, report
 
 logger = Logger()
@@ -16,6 +17,7 @@ app.include_router(expenses.router, prefix='/expense')
 app.include_router(report.router, prefix='/report')
 
 
+@require_auth
 @logger.inject_lambda_context(correlation_id_path=correlation_paths.API_GATEWAY_HTTP)
 @tracer.capture_lambda_handler
 def handler(event: dict, context: LambdaContext) -> dict:
