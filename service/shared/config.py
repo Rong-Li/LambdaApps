@@ -47,7 +47,7 @@ class AuthSettings(BaseSettings):
 
     bearer_token: str = ''  # Comma-separated list of valid tokens
 
-    model_config = {'env_prefix': 'HOMEAPP_', 'env_file': '.env', 'env_file_encoding': 'utf-8', 'extra': 'ignore'}
+    model_config = {'env_prefix': 'AUTH_', 'env_file': '.env', 'env_file_encoding': 'utf-8', 'extra': 'ignore'}
 
     @property
     def bearer_tokens(self) -> list[str]:
