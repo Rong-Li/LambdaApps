@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from service.shared.database import mongo_delete_expense, mongo_get_expenses, mongo_insert, mongo_update_expense
 from service.shared.models import Expense, ExpenseCreateResponse, ExpenseInput, GetExpenseParams
-from service.shared.models.enums import Category, CollectionName, TransactionType
+from service.shared.models.enums import Category, CollectionName, Currency, TransactionType
 
 router = Router()
 
@@ -36,6 +36,7 @@ def get_expenses() -> Response:
         end_date=query_params.end_datetime,
         category=query_params.category.value if query_params.category else None,
         transaction_type=query_params.transaction_type,
+        currency=query_params.currency,
         has_receipt=query_params.has_receipt,
         min_amount=query_params.min_amount,
         max_amount=query_params.max_amount,
@@ -47,6 +48,7 @@ def get_expenses() -> Response:
             amount=doc['amount'],
             category=Category(doc['category']),
             transaction_type=TransactionType(doc['transaction_type']),
+            currency=Currency(doc.get('currency', Currency.CAD)),
             created_at=doc['created_at'],
             merchant=doc.get('merchant'),
             description=doc.get('description'),
@@ -122,6 +124,7 @@ def update_expense(id: str) -> Response:
         amount=expense_data.amount,
         category=expense_data.category,
         transaction_type=expense_data.transaction_type,
+        currency=expense_data.currency,
         created_at=expense_data.created_at,
         merchant=expense_data.merchant,
         description=expense_data.description,
@@ -163,6 +166,7 @@ if __name__ == '__main__':
         amount=42.50,
         category=Category.Groceries,
         transaction_type=TransactionType.Debit,
+        currency=Currency.CAD,
         created_at=datetime.now(),
     )
     mock_event = type('Event', (), {'json_body': test_expense.model_dump(mode='json')})()
@@ -193,6 +197,7 @@ if __name__ == '__main__':
         'amount': 99.99,
         'category': Category.Shopping.value,
         'transaction_type': TransactionType.Debit.value,
+        'currency': 'CAD',
         'created_at': datetime.now().isoformat(),
         'merchant': 'Updated Store',
         'description': 'Updated expense description',

@@ -6,7 +6,7 @@ from typing import Annotated, ClassVar
 from pydantic import BaseModel, Field, field_validator, model_validator
 from pymongo import DESCENDING, IndexModel
 
-from service.shared.models.enums import Category, TransactionType
+from service.shared.models.enums import Category, Currency, TransactionType
 from service.shared.models.types import PositiveAmount
 
 # TTL: 2 years in seconds (365 * 2 * 24 * 60 * 60)
@@ -20,6 +20,7 @@ class GetExpenseParams(BaseModel):
     end_date: date
     category: Category | None = None
     transaction_type: TransactionType | None = None
+    currency: Currency | None = None
     has_receipt: bool | None = None
     min_amount: Annotated[float, Field(ge=0)] | None = None
     max_amount: Annotated[float, Field(ge=0)] | None = None
@@ -61,6 +62,7 @@ class ExpenseInput(BaseModel):
     """Schema for creating a new expense (client input)."""
 
     amount: PositiveAmount
+    currency: Currency = Currency.CAD
     category: Category
     transaction_type: TransactionType
     created_at: datetime = Field(..., description='Transaction timestamp')

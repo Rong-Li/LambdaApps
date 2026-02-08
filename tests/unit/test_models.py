@@ -5,7 +5,7 @@ from datetime import datetime
 import pytest
 from pydantic import ValidationError
 
-from service.shared.models import Category, ExpenseInput, TransactionType
+from service.shared.models import Category, Currency, ExpenseInput, TransactionType
 
 
 class TestExpenseInput:
@@ -18,6 +18,7 @@ class TestExpenseInput:
         assert expense.amount == 45.99
         assert expense.category == Category.Groceries
         assert expense.transaction_type == TransactionType.Debit
+        assert expense.currency == Currency.CAD
         assert expense.created_at == datetime(2026, 1, 28, 14, 30, 0)
 
     def test_amount_must_be_positive(self):
@@ -98,3 +99,12 @@ class TestTransactionType:
         """Test both transaction types exist."""
         assert TransactionType.Credit.value == 'Credit'
         assert TransactionType.Debit.value == 'Debit'
+
+
+class TestCurrency:
+    """Tests for Currency enum."""
+
+    def test_values(self):
+        """Test currency string values."""
+        assert Currency.CAD.value == 'CAD'
+        assert Currency.RMB.value == 'RMB'

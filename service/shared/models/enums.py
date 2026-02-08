@@ -23,6 +23,13 @@ class TransactionType(str, Enum):
     Debit = 'Debit'  # Expense / Spending
 
 
+class Currency(str, Enum):
+    """Currency enum."""
+
+    CAD = 'CAD'
+    RMB = 'RMB'
+
+
 class CollectionName(str, Enum):
     """MongoDB collection names."""
 

@@ -31,6 +31,7 @@ class TestGetExpenses:
         assert response.body[0]['amount'] == sample_expense_document['amount']
         assert response.body[0]['category'] == sample_expense_document['category']
         assert response.body[0]['transaction_type'] == sample_expense_document['transaction_type']
+        assert response.body[0]['currency'] == sample_expense_document['currency']
         mock_mongo_get_expenses.assert_called_once()
 
     @patch('service.api.routes.expenses.mongo_get_expenses')
@@ -54,6 +55,7 @@ class TestGetExpenses:
         call_kwargs = mock_mongo_get_expenses.call_args[1]
         assert call_kwargs['category'] == 'Groceries'
         assert call_kwargs['transaction_type'].value == 'Debit'
+        assert call_kwargs['currency'] is None
 
     @patch('service.api.routes.expenses.mongo_get_expenses')
     def test_get_expenses_empty_list(self, mock_mongo_get_expenses):
@@ -152,6 +154,25 @@ class TestGetExpenses:
         detail = response.body['detail']
         assert any(e.get('loc') == ('transaction_type',) for e in detail)
         mock_mongo_get_expenses.assert_not_called()
+
+    @patch('service.api.routes.expenses.mongo_get_expenses')
+    def test_get_expenses_with_currency_filter(self, mock_mongo_get_expenses, sample_expense_document):
+        """Test list with currency filter."""
+        mock_mongo_get_expenses.return_value = iter([sample_expense_document])
+
+        mock_event = MagicMock()
+        mock_event.query_string_parameters = {
+            'start_date': '2026-01-01',
+            'end_date': '2026-01-31',
+            'currency': 'RMB',
+        }
+        router.current_event = mock_event
+
+        response = get_expenses()
+
+        assert response.status_code == 200
+        call_kwargs = mock_mongo_get_expenses.call_args[1]
+        assert call_kwargs['currency'].value == 'RMB'
 
 
 class TestCreateExpense:
@@ -263,6 +284,7 @@ class TestUpdateExpense:
             'amount': 90.00,
             'category': 'Groceries',
             'transaction_type': 'Debit',
+            'currency': 'CAD',
             'created_at': '2026-01-30T14:30:00',
             'merchant': 'Costco',
             'description': 'Weekly groceries - updated',
@@ -277,6 +299,7 @@ class TestUpdateExpense:
         assert response.content_type == 'application/json'
         assert response.body['id'] == expense_id
         assert response.body['amount'] == 90.00
+        assert response.body['currency'] == 'CAD'
         assert response.body['merchant'] == 'Costco'
         assert response.body['description'] == 'Weekly groceries - updated'
         mock_mongo_update.assert_called_once()

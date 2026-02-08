@@ -13,6 +13,7 @@ def sample_expense_data():
         'amount': 45.99,
         'category': 'Groceries',
         'transaction_type': 'Debit',
+        'currency': 'CAD',
         'created_at': '2026-01-28T14:30:00',
     }
 
@@ -25,6 +26,7 @@ def sample_expense_document():
         'amount': 45.99,
         'category': 'Groceries',
         'transaction_type': 'Debit',
+        'currency': 'CAD',
         'created_at': datetime(2026, 1, 28),
         'recurring_payment': False,
     }

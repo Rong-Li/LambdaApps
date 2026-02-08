@@ -13,7 +13,7 @@ from pymongo.database import Database
 from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
 from service.shared.config import get_mongo_settings
-from service.shared.models.enums import Category, CollectionName, TransactionType
+from service.shared.models.enums import Category, CollectionName, Currency, TransactionType
 from service.shared.models.expense import Expense
 
 logger = Logger()
@@ -94,6 +94,7 @@ def mongo_get_expenses(
     end_date: datetime,
     category: Category | None = None,
     transaction_type: TransactionType | None = None,
+    currency: Currency | None = None,
     has_receipt: bool | None = None,
     min_amount: float | None = None,
     max_amount: float | None = None,
@@ -118,6 +119,8 @@ def mongo_get_expenses(
         query['category'] = category
     if transaction_type is not None:
         query['transaction_type'] = transaction_type.value
+    if currency is not None:
+        query['currency'] = currency.value
     if has_receipt is True:
         query['receipt_id'] = {'$exists': True, '$ne': None}
     elif has_receipt is False:
