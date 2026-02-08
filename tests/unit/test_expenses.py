@@ -196,6 +196,8 @@ class TestCreateExpense:
         assert response.content_type == 'application/json'
         assert response.body['expense_id'] == '507f1f77bcf86cd799439011'
         mock_mongo_insert.assert_called_once()
+        inserted_data = mock_mongo_insert.call_args[0][0]
+        assert inserted_data['postal_code'] == 'M5V 2H1'
 
     @patch('service.api.routes.expenses.mongo_insert')
     def test_create_expense_invalid_amount(self, mock_mongo_insert):
