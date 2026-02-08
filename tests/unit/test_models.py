@@ -1,6 +1,6 @@
 """Tests for Pydantic models."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from pydantic import ValidationError
@@ -20,7 +20,7 @@ class TestExpenseInput:
         assert expense.transaction_type == TransactionType.Debit
         assert expense.currency == Currency.CAD
         assert expense.postal_code == 'M5V 2H1'
-        assert expense.created_at == datetime(2026, 1, 28, 14, 30, 0)
+        assert expense.created_at == datetime(2026, 1, 28, 14, 30, 0, tzinfo=timezone.utc)
 
     def test_amount_must_be_positive(self):
         """Test that amount must be greater than 0."""
@@ -66,6 +66,30 @@ class TestExpenseInput:
                 transaction_type='Debit',
                 created_at='28-01-2026',  # Wrong format
             )
+
+    def test_naive_datetime_assumes_utc(self):
+        """Test that naive datetime is treated as UTC."""
+        expense = ExpenseInput(
+            amount=50.0,
+            category='Groceries',
+            transaction_type='Debit',
+            created_at='2026-01-28T10:00:00',
+        )
+        assert expense.created_at.tzinfo == timezone.utc
+        assert expense.created_at == datetime(2026, 1, 28, 10, 0, 0, tzinfo=timezone.utc)
+
+    def test_timezone_aware_datetime_converts_to_utc(self):
+        """Test that timezone-aware datetime is converted to UTC."""
+        # EST is UTC-5
+        expense = ExpenseInput(
+            amount=50.0,
+            category='Groceries',
+            transaction_type='Debit',
+            created_at='2026-01-28T10:00:00-05:00',
+        )
+        assert expense.created_at.tzinfo == timezone.utc
+        # 10:00 EST = 15:00 UTC
+        assert expense.created_at == datetime(2026, 1, 28, 15, 0, 0, tzinfo=timezone.utc)
 
 
 class TestCategory:

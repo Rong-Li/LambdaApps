@@ -1,6 +1,6 @@
 """Expense model definitions."""
 
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timezone
 from typing import Annotated, ClassVar
 
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -70,6 +70,18 @@ class ExpenseInput(BaseModel):
     description: str | None = None
     postal_code: str | None = None
     recurring_payment: bool = False
+
+    @field_validator('created_at', mode='before')
+    @classmethod
+    def normalize_to_utc(cls, v: datetime | str) -> datetime:
+        """Normalize timestamp to UTC. Convert if timezone-aware, assume UTC if naive."""
+        if isinstance(v, str):
+            v = datetime.fromisoformat(v)
+        if v.tzinfo is None:
+            # Naive datetime: assume UTC
+            return v.replace(tzinfo=timezone.utc)
+        # Timezone-aware: convert to UTC
+        return v.astimezone(timezone.utc)
 
 
 class Expense(ExpenseInput):
