@@ -32,6 +32,7 @@ class TestGetExpenses:
         assert response.body[0]['category'] == sample_expense_document['category']
         assert response.body[0]['transaction_type'] == sample_expense_document['transaction_type']
         assert response.body[0]['currency'] == sample_expense_document['currency']
+        assert response.body[0]['postal_code'] == sample_expense_document['postal_code']
         mock_mongo_get_expenses.assert_called_once()
 
     @patch('service.api.routes.expenses.mongo_get_expenses')
@@ -285,6 +286,7 @@ class TestUpdateExpense:
             'category': 'Groceries',
             'transaction_type': 'Debit',
             'currency': 'CAD',
+            'postal_code': 'M5V 2H1',
             'created_at': '2026-01-30T14:30:00',
             'merchant': 'Costco',
             'description': 'Weekly groceries - updated',
@@ -300,6 +302,7 @@ class TestUpdateExpense:
         assert response.body['id'] == expense_id
         assert response.body['amount'] == 90.00
         assert response.body['currency'] == 'CAD'
+        assert response.body['postal_code'] == 'M5V 2H1'
         assert response.body['merchant'] == 'Costco'
         assert response.body['description'] == 'Weekly groceries - updated'
         mock_mongo_update.assert_called_once()

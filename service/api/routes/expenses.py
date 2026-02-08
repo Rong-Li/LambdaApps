@@ -52,6 +52,7 @@ def get_expenses() -> Response:
             created_at=doc['created_at'],
             merchant=doc.get('merchant'),
             description=doc.get('description'),
+            postal_code=doc.get('postal_code'),
             receipt_id=doc.get('receipt_id'),
             recurring_payment=doc.get('recurring_payment', False),
         )
@@ -128,6 +129,7 @@ def update_expense(id: str) -> Response:
         created_at=expense_data.created_at,
         merchant=expense_data.merchant,
         description=expense_data.description,
+        postal_code=expense_data.postal_code,
         receipt_id=None,
         recurring_payment=expense_data.recurring_payment,
     )
@@ -201,6 +203,7 @@ if __name__ == '__main__':
         'created_at': datetime.now().isoformat(),
         'merchant': 'Updated Store',
         'description': 'Updated expense description',
+        'postal_code': 'M5V 2H1',
         'recurring_payment': True,
     }
     mock_event = type('Event', (), {'json_body': test_update_body})()

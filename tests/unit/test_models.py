@@ -19,6 +19,7 @@ class TestExpenseInput:
         assert expense.category == Category.Groceries
         assert expense.transaction_type == TransactionType.Debit
         assert expense.currency == Currency.CAD
+        assert expense.postal_code == 'M5V 2H1'
         assert expense.created_at == datetime(2026, 1, 28, 14, 30, 0)
 
     def test_amount_must_be_positive(self):

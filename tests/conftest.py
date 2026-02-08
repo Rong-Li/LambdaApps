@@ -15,6 +15,7 @@ def sample_expense_data():
         'transaction_type': 'Debit',
         'currency': 'CAD',
         'created_at': '2026-01-28T14:30:00',
+        'postal_code': 'M5V 2H1',
     }
 
 
@@ -28,6 +29,7 @@ def sample_expense_document():
         'transaction_type': 'Debit',
         'currency': 'CAD',
         'created_at': datetime(2026, 1, 28),
+        'postal_code': 'M5V 2H1',
         'recurring_payment': False,
     }
 

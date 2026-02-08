@@ -68,6 +68,7 @@ class ExpenseInput(BaseModel):
     created_at: datetime = Field(..., description='Transaction timestamp')
     merchant: str | None = None
     description: str | None = None
+    postal_code: str | None = None
     recurring_payment: bool = False
 
 
