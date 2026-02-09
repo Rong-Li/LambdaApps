@@ -15,12 +15,14 @@ from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 from service.shared.config import get_mongo_settings
 from service.shared.models.enums import Category, CollectionName, Currency, TransactionType
 from service.shared.models.expense import Expense
+from service.shared.models.payment_schedule import PaymentSchedule
 
 logger = Logger()
 
 # Map collection names to their index definitions
 COLLECTION_INDEXES = {
     CollectionName.Expense: Expense.indexes,
+    CollectionName.PaymentSchedule: PaymentSchedule.indexes,
 }
 
 
@@ -59,7 +61,6 @@ def ensure_indexes(collection: Collection, indexes: list) -> None:
 def mongo_insert(
     document: dict,
     collection_name: CollectionName,
-    ensure_indexes_flag: bool = False,
 ) -> InsertOneResult:
     """Insert a document into a MongoDB collection and log the result.
 
@@ -74,8 +75,9 @@ def mongo_insert(
     db = get_database()
     collection = db[collection_name]
 
+    settings = get_mongo_settings()
     indexes = COLLECTION_INDEXES.get(collection_name)
-    if ensure_indexes_flag and indexes:
+    if settings.check_create_index and indexes:
         ensure_indexes(collection, indexes)
 
     result = collection.insert_one(document)
@@ -205,5 +207,103 @@ def mongo_delete_expense(
     logger.info(
         f'Deleted expense from {collection_name}',
         extra={'expense_id': expense_id},
+    )
+    return result
+
+
+def mongo_get_payment_schedules(
+    collection_name: CollectionName,
+    is_active: bool | None = True,
+) -> Cursor:
+    """Get payment schedules with optional active filter.
+
+    Args:
+        collection_name: Name of the collection
+        is_active: Filter by active status (default: True for active only)
+
+    Returns:
+        Cursor over matching documents, sorted by is_active (True first)
+    """
+    query: dict = {}
+    if is_active is not None:
+        query['is_active'] = is_active
+
+    db = get_database()
+    collection = db[collection_name]
+    return collection.find(query).sort('is_active', -1)
+
+
+def mongo_get_payment_schedule_by_id(
+    collection_name: CollectionName,
+    schedule_id: str,
+) -> dict | None:
+    """Get a single payment schedule by id.
+
+    Args:
+        collection_name: Name of the collection
+        schedule_id: Schedule document id
+
+    Returns:
+        Document dict if found, None otherwise
+    """
+    doc_id = _parse_expense_id(schedule_id)
+    db = get_database()
+    collection = db[collection_name]
+    return collection.find_one({'_id': doc_id})
+
+
+def mongo_update_payment_schedule(
+    collection_name: CollectionName,
+    schedule_id: str,
+    update_doc: dict,
+) -> UpdateResult | None:
+    """Update a single payment schedule by id.
+
+    Args:
+        collection_name: Name of the collection
+        schedule_id: Schedule document id
+        update_doc: Document fields to set
+
+    Returns:
+        UpdateResult if matched, None if not found
+    """
+    doc_id = _parse_expense_id(schedule_id)
+    db = get_database()
+    collection = db[collection_name]
+    result = collection.update_one(
+        {'_id': doc_id},
+        {'$set': update_doc},
+    )
+    if result.matched_count == 0:
+        return None
+    logger.info(
+        f'Updated payment schedule in {collection_name}',
+        extra={'schedule_id': schedule_id},
+    )
+    return result
+
+
+def mongo_delete_payment_schedule(
+    collection_name: CollectionName,
+    schedule_id: str,
+) -> DeleteResult | None:
+    """Delete a single payment schedule by id.
+
+    Args:
+        collection_name: Name of the collection
+        schedule_id: Schedule document id
+
+    Returns:
+        DeleteResult if deleted, None if not found
+    """
+    doc_id = _parse_expense_id(schedule_id)
+    db = get_database()
+    collection = db[collection_name]
+    result = collection.delete_one({'_id': doc_id})
+    if result.deleted_count == 0:
+        return None
+    logger.info(
+        f'Deleted payment schedule from {collection_name}',
+        extra={'schedule_id': schedule_id},
     )
     return result

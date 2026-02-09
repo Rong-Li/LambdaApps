@@ -6,7 +6,7 @@ from aws_lambda_powertools.logging import correlation_paths
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
 from service.api.auth import require_auth
-from service.api.routes import expenses, report
+from service.api.routes import expenses, payment_schedules, report
 
 logger = Logger()
 tracer = Tracer()
@@ -14,6 +14,7 @@ app = APIGatewayHttpResolver()
 
 # Register routes
 app.include_router(expenses.router, prefix='/expense')
+app.include_router(payment_schedules.router, prefix='/payment-schedule')
 app.include_router(report.router, prefix='/report')
 
 

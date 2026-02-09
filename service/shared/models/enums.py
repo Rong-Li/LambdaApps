@@ -30,7 +30,16 @@ class Currency(str, Enum):
     RMB = 'RMB'
 
 
+class Frequency(str, Enum):
+    """Payment frequency enum."""
+
+    Weekly = 'Weekly'
+    Biweekly = 'Biweekly'
+    Monthly = 'Monthly'
+
+
 class CollectionName(str, Enum):
     """MongoDB collection names."""
 
     Expense = 'expense'
+    PaymentSchedule = 'payment_schedule'
