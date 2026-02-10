@@ -86,7 +86,7 @@ def create_expense_from_schedule(schedule: dict) -> ExpenseInput:
         end_date = end_date.date()
     desc = schedule.get('description', '')
 
-    combined_desc = f"Schedule: {name} | Merchant: {merchant} | Freq: {frequency} | Start: {start_date}"
+    combined_desc = f"Merchant: {merchant} | Freq: {frequency} | Start: {start_date}"
     if end_date:
         combined_desc += f" | End: {end_date}"
     if desc:
