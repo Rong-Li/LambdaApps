@@ -72,3 +72,11 @@ jobs:
           code-artifacts-dir: ./dist/batch
           runtime: python3.14
           handler: service.batch.handler.handler
+
+      - name: Deploy Recurring Payments function
+        uses: aws-actions/aws-lambda-deploy@v1
+        with:
+          function-name: lambda-home-recurring-payments
+          code-artifacts-dir: ./dist/batch
+          runtime: python3.14
+          handler: service.batch.recurring_payments.handler
