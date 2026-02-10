@@ -43,7 +43,6 @@ def sample_payment_schedule_document():
         'monthly_dates': [1],
         'start_date': date(2026, 1, 1),
         'end_date': None,
-        'is_active': True,
         'merchant': 'Netflix',
         'description': 'Monthly subscription',
         'created_at': datetime(2026, 1, 1, tzinfo=timezone.utc),
@@ -75,22 +74,6 @@ class TestGetPaymentSchedules:
         assert response.body[0]['amount'] == 15.99
         mock_mongo_get.assert_called_once()
 
-    @patch('service.api.routes.payment_schedules.mongo_get_payment_schedules')
-    def test_get_payment_schedules_inactive(self, mock_mongo_get, sample_payment_schedule_document):
-        """Test filtering by inactive schedules."""
-        mock_mongo_get.return_value = iter([])
-
-        mock_event = MagicMock()
-        mock_event.query_string_parameters = {'is_active': 'false'}
-        router.current_event = mock_event
-
-        response = get_payment_schedules()
-
-        assert response.status_code == 200
-        mock_mongo_get.assert_called_once_with(
-            CollectionName.PaymentSchedule,
-            is_active=False,
-        )
 
 
 class TestGetPaymentSchedule:

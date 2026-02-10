@@ -213,24 +213,18 @@ def mongo_delete_expense(
 
 def mongo_get_payment_schedules(
     collection_name: CollectionName,
-    is_active: bool | None = True,
 ) -> Cursor:
-    """Get payment schedules with optional active filter.
+    """Get all payment schedules.
 
     Args:
         collection_name: Name of the collection
-        is_active: Filter by active status (default: True for active only)
 
     Returns:
-        Cursor over matching documents, sorted by is_active (True first)
+        Cursor over matching documents, sorted by created_at (newest first)
     """
-    query: dict = {}
-    if is_active is not None:
-        query['is_active'] = is_active
-
     db = get_database()
     collection = db[collection_name]
-    return collection.find(query).sort('is_active', -1)
+    return collection.find({}).sort('created_at', -1)
 
 
 def mongo_get_payment_schedule_by_id(

@@ -9,8 +9,8 @@ from pymongo import DESCENDING, IndexModel
 from service.shared.models.enums import Category, Currency, Frequency, TransactionType
 from service.shared.models.types import PositiveAmount
 
-# TTL: 1 year in seconds (365 * 24 * 60 * 60)
-TTL_ONE_YEAR = 31536000
+# TTL: 6 months in seconds (180 * 24 * 60 * 60)
+TTL_SIX_MONTHS = 15552000
 
 
 class PaymentScheduleInput(BaseModel):
@@ -27,7 +27,6 @@ class PaymentScheduleInput(BaseModel):
     monthly_dates: Annotated[list[int], Field(min_length=1)] | None = None
     start_date: date
     end_date: date | None = None
-    is_active: bool = True
 
     @field_validator('monthly_dates', mode='before')
     @classmethod
@@ -67,8 +66,7 @@ class PaymentSchedule(PaymentScheduleInput):
     model_config = {'populate_by_name': True}
 
     indexes: ClassVar[list[IndexModel]] = [
-        IndexModel([('end_date', DESCENDING)], expireAfterSeconds=TTL_ONE_YEAR, name='end_date_ttl', sparse=True),
-        IndexModel([('is_active', DESCENDING)], name='is_active_idx'),
+        IndexModel([('end_date', DESCENDING)], expireAfterSeconds=TTL_SIX_MONTHS, name='end_date_ttl', sparse=True),
     ]
 
 

@@ -21,23 +21,12 @@ router = Router()
 
 @router.get('/')
 def get_payment_schedules() -> Response:
-    """List payment schedules.
+    """List all payment schedules.
 
-    GET /payment-schedule?is_active=true|false
+    GET /payment-schedule
     """
-    params = router.current_event.query_string_parameters or {}
-    is_active_param = params.get('is_active')
-
-    is_active: bool | None = True  # Default to active only
-    if is_active_param is not None:
-        if is_active_param.lower() == 'false':
-            is_active = False
-        elif is_active_param.lower() == 'all':
-            is_active = None
-
     cursor = mongo_get_payment_schedules(
         CollectionName.PaymentSchedule,
-        is_active=is_active,
     )
 
     items = [
@@ -54,7 +43,6 @@ def get_payment_schedules() -> Response:
             monthly_dates=doc.get('monthly_dates'),
             start_date=doc['start_date'],
             end_date=doc.get('end_date'),
-            is_active=doc.get('is_active', True),
             created_at=doc.get('created_at', datetime.now(timezone.utc)),
             updated_at=doc.get('updated_at', datetime.now(timezone.utc)),
         )
@@ -96,7 +84,6 @@ def get_payment_schedule(id: str) -> Response:
         monthly_dates=doc.get('monthly_dates'),
         start_date=doc['start_date'],
         end_date=doc.get('end_date'),
-        is_active=doc.get('is_active', True),
         created_at=doc.get('created_at', datetime.now(timezone.utc)),
         updated_at=doc.get('updated_at', datetime.now(timezone.utc)),
     )
@@ -182,7 +169,6 @@ def update_payment_schedule(id: str) -> Response:
         monthly_dates=schedule_data.monthly_dates,
         start_date=schedule_data.start_date,
         end_date=schedule_data.end_date,
-        is_active=schedule_data.is_active,
         created_at=doc.get('created_at', datetime.now(timezone.utc)) if doc else datetime.now(timezone.utc),
         updated_at=update_doc['updated_at'],
     )

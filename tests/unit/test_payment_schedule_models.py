@@ -25,7 +25,6 @@ class TestPaymentScheduleInput:
         assert schedule.name == 'Weekly Groceries'
         assert schedule.amount == 100.00
         assert schedule.frequency == Frequency.Weekly
-        assert schedule.is_active is True
         assert schedule.transaction_type == TransactionType.Debit
         assert schedule.monthly_dates is None
 

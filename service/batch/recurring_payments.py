@@ -10,6 +10,7 @@ from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
 from service.shared.database import get_database, mongo_get_payment_schedules, mongo_insert
+from service.shared.models import ExpenseInput
 from service.shared.models.enums import CollectionName, Frequency
 
 logger = Logger()
@@ -62,27 +63,45 @@ def is_schedule_due(schedule: dict, today: date) -> bool:
     return False
 
 
-def create_expense_from_schedule(schedule: dict) -> dict:
+def create_expense_from_schedule(schedule: dict) -> ExpenseInput:
     """Create an expense document from a payment schedule.
 
     Args:
         schedule: Payment schedule document
 
     Returns:
-        Expense document ready for insertion
+        ExpenseInput object
     """
     now = datetime.now(timezone.utc)
-    return {
-        'amount': schedule['amount'],
-        'currency': schedule.get('currency', 'CAD'),
-        'category': schedule['category'],
-        'transaction_type': schedule.get('transaction_type', 'Debit'),
-        'created_at': now,
-        'merchant': schedule.get('merchant'),
-        'description': schedule.get('description'),
-        'recurring_payment': True,
-        'schedule_id': str(schedule['_id']),  # Reference to the schedule
-    }
+
+    # Combine fields into description
+    name = schedule.get('name', 'N/A')
+    merchant = schedule.get('merchant', 'N/A')
+    frequency = schedule.get('frequency', 'N/A')
+    start_date = schedule.get('start_date')
+    if isinstance(start_date, datetime):
+        start_date = start_date.date()
+    end_date = schedule.get('end_date')
+    if isinstance(end_date, datetime):
+        end_date = end_date.date()
+    desc = schedule.get('description', '')
+
+    combined_desc = f"Schedule: {name} | Merchant: {merchant} | Freq: {frequency} | Start: {start_date}"
+    if end_date:
+        combined_desc += f" | End: {end_date}"
+    if desc:
+        combined_desc += f" | Note: {desc}"
+
+    return ExpenseInput(
+        amount=schedule['amount'],
+        currency=schedule.get('currency', 'CAD'),
+        category=schedule['category'],
+        transaction_type=schedule.get('transaction_type', 'Debit'),
+        created_at=now,
+        merchant=schedule.get('merchant'),
+        description=combined_desc,
+        recurring_payment=True,
+    )
 
 
 @logger.inject_lambda_context
@@ -100,7 +119,6 @@ def handler(event: dict, context: LambdaContext) -> dict:
     # Step 1: Get all active payment schedules
     cursor = mongo_get_payment_schedules(
         CollectionName.PaymentSchedule,
-        is_active=True,
     )
     schedules = list(cursor)
     logger.info(f'Found {len(schedules)} active payment schedules')
@@ -115,8 +133,8 @@ def handler(event: dict, context: LambdaContext) -> dict:
 
     for schedule in due_schedules:
         try:
-            expense_doc = create_expense_from_schedule(schedule)
-            mongo_insert(expense_doc, CollectionName.Expense)
+            expense = create_expense_from_schedule(schedule)
+            mongo_insert(expense.model_dump(), CollectionName.Expense)
             expenses_created += 1
             logger.info(
                 f'Created expense from schedule',
