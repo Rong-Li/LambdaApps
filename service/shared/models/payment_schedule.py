@@ -25,8 +25,8 @@ class PaymentScheduleInput(BaseModel):
     description: str | None = None
     frequency: Frequency
     monthly_dates: Annotated[list[int], Field(min_length=1)] | None = None
-    start_date: date
-    end_date: date | None = None
+    start_date: datetime
+    end_date: datetime | None = None
 
     @field_validator('monthly_dates', mode='before')
     @classmethod
@@ -38,6 +38,29 @@ class PaymentScheduleInput(BaseModel):
             if not 1 <= d <= 28:
                 raise ValueError('monthly_dates must be between 1 and 28')
         return sorted(set(v))
+
+    @field_validator('start_date', 'end_date', mode='before')
+    @classmethod
+    def normalize_to_datetime(cls, v: datetime | date | str | None) -> datetime | None:
+        """Normalize input to UTC datetime."""
+        if v is None:
+            return None
+        if isinstance(v, str):
+            # Try parsing date first, then datetime
+            try:
+                v = date.fromisoformat(v)
+            except ValueError:
+                v = datetime.fromisoformat(v)
+
+        if isinstance(v, date) and not isinstance(v, datetime):
+            v = datetime.combine(v, datetime.min.time(), tzinfo=timezone.utc)
+
+        if isinstance(v, datetime):
+            if v.tzinfo is None:
+                v = v.replace(tzinfo=timezone.utc)
+            else:
+                v = v.astimezone(timezone.utc)
+        return v
 
     @model_validator(mode='after')
     def validate_monthly_dates_required(self) -> 'PaymentScheduleInput':

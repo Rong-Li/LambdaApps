@@ -43,7 +43,7 @@ class TestPaymentScheduleInput:
         assert schedule.name == 'Rent Payment'
         assert schedule.frequency == Frequency.Monthly
         assert schedule.monthly_dates == [1, 15]
-        assert schedule.end_date == date(2027, 12, 31)
+        assert schedule.end_date == datetime(2027, 12, 31, tzinfo=timezone.utc)
 
     def test_monthly_requires_dates(self):
         """Test that monthly frequency requires monthly_dates."""
