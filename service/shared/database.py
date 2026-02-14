@@ -316,7 +316,7 @@ def mongo_get_cash_balance() -> dict:
             'balance': 0.0,
             'last_updated_date': datetime.combine(date.today(), datetime.min.time()),
         }
-        collection.insert_one(balance_doc)
+        mongo_insert(balance_doc, CollectionName.Cash)
     return balance_doc
 
 
@@ -354,7 +354,7 @@ def mongo_update_cash_balance_and_add_transaction(
         'type': transaction_type.value,
         'timestamp': timestamp,
     }
-    collection.insert_one(transaction_doc)
+    mongo_insert(transaction_doc, CollectionName.Cash)
 
 
 def mongo_reset_cash() -> None:
