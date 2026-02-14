@@ -13,7 +13,7 @@ class MongoSettings(BaseSettings):
     username: str
     password: SecretStr
     database: str = 'homeapp'
-    check_create_index: bool = False
+    check_create_index: bool = True
 
     model_config = {'env_prefix': 'MONGO_', 'env_file': '.env', 'env_file_encoding': 'utf-8', 'extra': 'ignore'}
 
