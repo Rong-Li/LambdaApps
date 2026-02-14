@@ -3,6 +3,7 @@
 from service.shared.models.enums import Category, Currency, Frequency, TransactionType
 from service.shared.models.expense import Expense, ExpenseCreateResponse, ExpenseInput, GetExpenseParams
 from service.shared.models.payment_schedule import PaymentSchedule, PaymentScheduleCreateResponse, PaymentScheduleInput
+from service.shared.models.cash import CashBalance, CashResponse, CashTransaction
 from service.shared.models.report import Report, ReportExpenseResponse
 from service.shared.models.types import PositiveAmount
 
@@ -19,6 +20,9 @@ __all__ = [
     'PaymentSchedule',
     'PaymentScheduleCreateResponse',
     'PaymentScheduleInput',
+    'CashTransaction',
+    'CashBalance',
+    'CashResponse',
     'Report',
     'ReportExpenseResponse',
 ]
