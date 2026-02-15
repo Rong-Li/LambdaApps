@@ -3,8 +3,8 @@
 from enum import Enum
 
 
-class Category(str, Enum):
-    """Expense category enum."""
+class CategoryExpense(str, Enum):
+    """Expense-specific categories (spending)."""
 
     Groceries = 'Groceries'
     EatOut = 'EatOut'
@@ -14,6 +14,30 @@ class Category(str, Enum):
     Shopping = 'Shopping'
     Gas = 'Gas'
     Insurance = 'Insurance'
+
+    @classmethod
+    def values(cls) -> set[str]:
+        """Set of all expense category values."""
+        return {c.value for c in cls}
+
+
+class CategoryEarning(str, Enum):
+    """Earning-specific categories (income)."""
+
+    Salary = 'Salary'
+
+    @classmethod
+    def values(cls) -> set[str]:
+        """Set of all earning category values."""
+        return {c.value for c in cls}
+
+
+# Dynamic union of expense and earning categories to avoid repetition
+Category = Enum(
+    'Category',
+    [(m.name, m.value) for m in list(CategoryExpense) + list(CategoryEarning)],
+    type=str
+)
 
 
 class TransactionType(str, Enum):
@@ -44,3 +68,4 @@ class CollectionName(str, Enum):
     Expense = 'expense'
     PaymentSchedule = 'payment_schedule'
     Cash = 'cash'
+    Report = 'report'

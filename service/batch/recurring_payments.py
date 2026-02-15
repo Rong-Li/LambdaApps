@@ -104,12 +104,13 @@ def create_expense_from_schedule(schedule: dict) -> ExpenseInput:
     )
 
 
-@logger.inject_lambda_context
-@tracer.capture_lambda_handler
-def handler(event: dict, context: LambdaContext) -> dict:
-    """Recurring payments batch job handler.
+def run_recurring_payments() -> dict:
+    """Run recurring payments batch job.
 
-    Runs daily to create expenses from active payment schedules that are due.
+    Creates expenses from active payment schedules that are due today.
+
+    Returns:
+        Summary dict with counts and errors.
     """
     logger.info('Starting recurring payments batch job')
 
@@ -161,13 +162,9 @@ def handler(event: dict, context: LambdaContext) -> dict:
     )
 
     return {
-        'statusCode': 200,
-        'body': {
-            'message': 'Recurring payments batch job completed',
-            'date': str(today),
-            'schedules_checked': len(schedules),
-            'schedules_due': len(due_schedules),
-            'expenses_created': expenses_created,
-            'errors': errors,
-        },
+        'date': str(today),
+        'schedules_checked': len(schedules),
+        'schedules_due': len(due_schedules),
+        'expenses_created': expenses_created,
+        'errors': errors,
     }
