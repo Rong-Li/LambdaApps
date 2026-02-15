@@ -47,7 +47,7 @@ def run_monthly_reaggregation() -> dict:
     db = get_database()
     results = []
 
-    for first_day, last_day in _get_past_months(3):
+    for first_day, last_day in _get_past_months(6):
         month_str = first_day.strftime('%Y-%m')
         expenses = list(mongo_get_expenses(
             CollectionName.Expense,
