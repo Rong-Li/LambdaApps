@@ -33,7 +33,7 @@ def handler(event: dict, context: LambdaContext) -> dict:
     logger.info('Daily aggregation complete', extra=aggregation_result)
 
     # Task 3: Monthly re-aggregation (runs only on the 1st)
-    if date.today().day == 1:
+    if date.today().day == 15:
         reaggregation_result = run_monthly_reaggregation()
     else:
         reaggregation_result = {'skipped': True, 'reason': 'not_first_of_month'}
