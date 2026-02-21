@@ -493,9 +493,9 @@ def mongo_reconcile_balance(balance_doc: dict) -> tuple[bool, float, float]:
     rmb_debits = 0.0
 
     for doc in cursor:
-        amount = doc.get('amount', 0.0)
-        currency = doc.get('currency', 'CAD')
-        txn_type = doc.get('transaction_type', '')
+        amount = doc.get('amount')
+        currency = doc.get('currency')
+        txn_type = doc.get('transaction_type')
 
         if currency == 'CAD':
             if txn_type == 'Credit':
