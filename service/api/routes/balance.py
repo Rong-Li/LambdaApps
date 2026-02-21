@@ -19,7 +19,7 @@ router = Router()
 
 @router.get('/')
 def get_balances() -> Response:
-    """List all balance records sorted by record_date descending.
+    """List all balance records sorted by record_time descending.
 
     GET /balance
     """
@@ -30,7 +30,7 @@ def get_balances() -> Response:
             _id=str(doc['_id']),
             cad_balance=doc['cad_balance'],
             rmb_balance=doc['rmb_balance'],
-            record_date=doc['record_date'],
+            record_time=doc['record_time'],
             note=doc.get('note'),
             reconciled=doc.get('reconciled', False),
             cad_off_amount=doc.get('cad_off_amount'),
@@ -52,7 +52,7 @@ def create_balance() -> Response:
     """Create a new balance record and auto-reconcile.
 
     POST /balance
-    Body: cad_balance, rmb_balance, record_date, note?
+    Body: cad_balance, rmb_balance, record_time, note?
 
     Returns 201 if reconciled (or no previous balance), 202 if off > 2%.
     """
@@ -123,7 +123,7 @@ def reconcile_latest() -> Response:
     # Find the latest unreconciled balance
     balance_doc = collection.find_one(
         {'reconciled': False},
-        sort=[('record_date', -1)],
+        sort=[('record_time', -1)],
     )
 
     if balance_doc is None:

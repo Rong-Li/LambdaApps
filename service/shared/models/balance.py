@@ -1,8 +1,8 @@
 """Balance model definitions."""
 
-from datetime import date
+from datetime import date, datetime, timezone
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class BalanceInput(BaseModel):
@@ -10,8 +10,18 @@ class BalanceInput(BaseModel):
 
     cad_balance: float
     rmb_balance: float
-    record_date: date
+    record_time: datetime
     note: str | None = None
+
+    @field_validator('record_time', mode='before')
+    @classmethod
+    def normalize_to_utc(cls, v: datetime | str) -> datetime:
+        """Normalize timestamp to UTC. Convert if timezone-aware, assume UTC if naive."""
+        if isinstance(v, str):
+            v = datetime.fromisoformat(v)
+        if v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)
+        return v.astimezone(timezone.utc)
 
 
 class Balance(BalanceInput):

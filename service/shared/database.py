@@ -387,19 +387,19 @@ RECONCILIATION_THRESHOLD = 0.02
 
 
 def mongo_get_balances() -> Cursor:
-    """Get all balance records sorted by record_date descending."""
+    """Get all balance records sorted by record_time descending."""
     db = get_database()
     collection = db[CollectionName.Balance]
-    return collection.find({}).sort('record_date', -1)
+    return collection.find({}).sort('record_time', -1)
 
 
-def mongo_get_previous_balance(record_date: date) -> dict | None:
-    """Find the most recent balance whose record_date is strictly before *record_date*."""
+def mongo_get_previous_balance(record_time: datetime) -> dict | None:
+    """Find the most recent balance whose record_time is strictly before *record_time*."""
     db = get_database()
     collection = db[CollectionName.Balance]
     return collection.find_one(
-        {'record_date': {'$lt': datetime.combine(record_date, datetime.min.time())}},
-        sort=[('record_date', -1)],
+        {'record_time': {'$lt': record_time}},
+        sort=[('record_time', -1)],
     )
 
 
@@ -459,38 +459,31 @@ def mongo_reconcile_balance(balance_doc: dict) -> tuple[bool, float, float]:
     """
     from dateutil.relativedelta import relativedelta
 
-    record_date = balance_doc['record_date']
-    if isinstance(record_date, datetime):
-        record_date = record_date.date()
+    record_time = balance_doc['record_time']
 
     cad_balance = balance_doc['cad_balance']
     rmb_balance = balance_doc['rmb_balance']
     balance_id = str(balance_doc['_id'])
 
-    previous = mongo_get_previous_balance(record_date)
+    previous = mongo_get_previous_balance(record_time)
 
     # No previous balance or previous is more than 1 year old → skip recon
     if previous is None:
         mongo_update_balance_reconciled(balance_id, False, cad_balance, rmb_balance)
         return (False, cad_balance, rmb_balance)
 
-    prev_date = previous['record_date']
-    if isinstance(prev_date, datetime):
-        prev_date = prev_date.date()
+    prev_time = previous['record_time']
 
-    if record_date - prev_date > relativedelta(years=1).normalized():
+    if record_time - prev_time > relativedelta(years=1).normalized():
         # More than a year gap – treat as no previous
         mongo_update_balance_reconciled(balance_id, False, cad_balance, rmb_balance)
         return (False, cad_balance, rmb_balance)
 
-    # Query expenses between previous record_date and this record_date
-    start_dt = datetime.combine(prev_date, datetime.min.time())
-    end_dt = datetime.combine(record_date, datetime.max.time())
-
+    # Query expenses between previous record_time and this record_time
     cursor = mongo_get_expenses(
         CollectionName.Expense,
-        start_date=start_dt,
-        end_date=end_dt,
+        start_date=prev_time,
+        end_date=record_time,
     )
 
     # Accumulate credits and debits by currency
@@ -528,6 +521,6 @@ def mongo_reconcile_balance(balance_doc: dict) -> tuple[bool, float, float]:
     denominator = max(abs(cad_calculated_balance), 1.0)
     reconciled = abs(cad_off) / denominator <= RECONCILIATION_THRESHOLD
 
-    mongo_update_balance_reconciled(balance_id, reconciled, cad_off, rmb_off, last_balance_date=prev_date)
+    mongo_update_balance_reconciled(balance_id, reconciled, cad_off, rmb_off, last_balance_date=prev_time)
     return (reconciled, cad_off, rmb_off)
 

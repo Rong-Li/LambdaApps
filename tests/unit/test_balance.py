@@ -1,6 +1,6 @@
 """Tests for balance API routes."""
 
-from datetime import date
+from datetime import date, datetime
 from unittest.mock import MagicMock, patch
 
 from bson import ObjectId
@@ -19,7 +19,7 @@ class TestGetBalances:
                 '_id': '507f1f77bcf86cd799439011',
                 'cad_balance': 5000.0,
                 'rmb_balance': 10000.0,
-                'record_date': date(2026, 2, 1),
+                'record_time': datetime(2026, 2, 1),
                 'note': 'February balance',
                 'reconciled': True,
                 'cad_off_amount': 10.5,
@@ -29,7 +29,7 @@ class TestGetBalances:
                 '_id': '507f1f77bcf86cd799439012',
                 'cad_balance': 4500.0,
                 'rmb_balance': 9000.0,
-                'record_date': date(2026, 1, 1),
+                'record_time': datetime(2026, 1, 1),
                 'note': None,
                 'reconciled': False,
                 'cad_off_amount': None,
@@ -77,7 +77,7 @@ class TestCreateBalance:
             '_id': inserted_id,
             'cad_balance': 5000.0,
             'rmb_balance': 10000.0,
-            'record_date': date(2026, 2, 1),
+            'record_time': datetime(2026, 2, 1),
         }
         mock_get_db.return_value = mock_db
 
@@ -87,7 +87,7 @@ class TestCreateBalance:
         mock_event.json_body = {
             'cad_balance': 5000.0,
             'rmb_balance': 10000.0,
-            'record_date': '2026-02-01',
+            'record_time': '2026-02-01',
         }
         router.current_event = mock_event
 
@@ -116,7 +116,7 @@ class TestCreateBalance:
             '_id': inserted_id,
             'cad_balance': 5000.0,
             'rmb_balance': 10000.0,
-            'record_date': date(2026, 2, 1),
+            'record_time': datetime(2026, 2, 1),
         }
         mock_get_db.return_value = mock_db
 
@@ -126,7 +126,7 @@ class TestCreateBalance:
         mock_event.json_body = {
             'cad_balance': 5000.0,
             'rmb_balance': 10000.0,
-            'record_date': '2026-02-01',
+            'record_time': '2026-02-01',
         }
         router.current_event = mock_event
 
@@ -141,7 +141,7 @@ class TestCreateBalance:
         mock_event = MagicMock()
         mock_event.json_body = {
             'cad_balance': 5000.0,
-            # missing rmb_balance and record_date
+            # missing rmb_balance and record_time
         }
         router.current_event = mock_event
 
@@ -189,7 +189,7 @@ class TestReconcileLatest:
             '_id': balance_id,
             'cad_balance': 5000.0,
             'rmb_balance': 10000.0,
-            'record_date': date(2026, 2, 1),
+            'record_time': datetime(2026, 2, 1),
             'reconciled': False,
         }
         mock_db = MagicMock()
@@ -216,7 +216,7 @@ class TestReconcileLatest:
             '_id': balance_id,
             'cad_balance': 5000.0,
             'rmb_balance': 10000.0,
-            'record_date': date(2026, 2, 1),
+            'record_time': datetime(2026, 2, 1),
             'reconciled': False,
         }
         mock_db = MagicMock()
