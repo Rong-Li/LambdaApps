@@ -43,7 +43,7 @@ def get_balances() -> Response:
     return Response(
         status_code=200,
         content_type='application/json',
-        body=[item.model_dump(mode='json') for item in items],
+        body=[item.model_dump(mode='json', exclude={'last_balance_date'}) for item in items],
     )
 
 
