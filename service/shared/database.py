@@ -457,7 +457,7 @@ def mongo_reconcile_balance(balance_doc: dict) -> tuple[bool, float, float]:
     Returns:
         (reconciled, cad_off_amount, rmb_off_amount)
     """
-    from dateutil.relativedelta import relativedelta
+    from datetime import timedelta
 
     record_time = balance_doc['record_time']
 
@@ -474,7 +474,7 @@ def mongo_reconcile_balance(balance_doc: dict) -> tuple[bool, float, float]:
 
     prev_time = previous['record_time']
 
-    if record_time - prev_time > relativedelta(years=1).normalized():
+    if record_time - prev_time > timedelta(days=365):
         # More than a year gap – treat as no previous
         mongo_update_balance_reconciled(balance_id, False, cad_balance, rmb_balance)
         return (False, cad_balance, rmb_balance)
