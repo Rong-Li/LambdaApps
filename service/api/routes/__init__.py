@@ -1,5 +1,5 @@
 """API routes package."""
 
-from service.api.routes import expenses, report
+from service.api.routes import balance, expenses, report
 
-__all__ = ['expenses', 'report']
+__all__ = ['balance', 'expenses', 'report']

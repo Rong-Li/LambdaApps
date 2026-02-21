@@ -376,3 +376,158 @@ def mongo_reset_cash() -> None:
         },
         upsert=True,
     )
+
+
+# ---------------------------------------------------------------------------
+# Balance helpers
+# ---------------------------------------------------------------------------
+
+# Reconciliation tolerance: 2% of calculated balance
+RECONCILIATION_THRESHOLD = 0.02
+
+
+def mongo_get_balances() -> Cursor:
+    """Get all balance records sorted by record_date descending."""
+    db = get_database()
+    collection = db[CollectionName.Balance]
+    return collection.find({}).sort('record_date', -1)
+
+
+def mongo_get_previous_balance(record_date: date) -> dict | None:
+    """Find the most recent balance whose record_date is strictly before *record_date*."""
+    db = get_database()
+    collection = db[CollectionName.Balance]
+    return collection.find_one(
+        {'record_date': {'$lt': datetime.combine(record_date, datetime.min.time())}},
+        sort=[('record_date', -1)],
+    )
+
+
+def mongo_delete_balance(balance_id: str) -> DeleteResult | None:
+    """Delete a single balance by id.
+
+    Returns:
+        DeleteResult if a document was deleted, None if not found
+    """
+    doc_id = _parse_expense_id(balance_id)
+    db = get_database()
+    collection = db[CollectionName.Balance]
+    result = collection.delete_one({'_id': doc_id})
+    if result.deleted_count == 0:
+        return None
+    logger.info('Deleted balance', extra={'balance_id': balance_id})
+    return result
+
+
+def mongo_update_balance_reconciled(
+    balance_id: str,
+    reconciled: bool,
+    cad_off: float,
+    rmb_off: float,
+    last_balance_date: date | None = None,
+) -> None:
+    """Set reconciled, cad_off_amount, rmb_off_amount, and last_balance_date on a balance document."""
+    doc_id = _parse_expense_id(balance_id)
+    db = get_database()
+    collection = db[CollectionName.Balance]
+    update_fields: dict = {
+        'reconciled': reconciled,
+        'cad_off_amount': cad_off,
+        'rmb_off_amount': rmb_off,
+    }
+    if last_balance_date is not None:
+        update_fields['last_balance_date'] = datetime.combine(last_balance_date, datetime.min.time())
+    collection.update_one(
+        {'_id': doc_id},
+        {'$set': update_fields},
+    )
+    logger.info(
+        'Updated balance reconciliation',
+        extra={'balance_id': balance_id, 'reconciled': reconciled},
+    )
+
+
+def mongo_reconcile_balance(balance_doc: dict) -> tuple[bool, float, float]:
+    """Reconcile a balance against expense transactions.
+
+    Compares the balance's cad_balance/rmb_balance against the sum of
+    credit/debit transactions in the expense collection since the previous
+    balance record.
+
+    Returns:
+        (reconciled, cad_off_amount, rmb_off_amount)
+    """
+    from dateutil.relativedelta import relativedelta
+
+    record_date = balance_doc['record_date']
+    if isinstance(record_date, datetime):
+        record_date = record_date.date()
+
+    cad_balance = balance_doc['cad_balance']
+    rmb_balance = balance_doc['rmb_balance']
+    balance_id = str(balance_doc['_id'])
+
+    previous = mongo_get_previous_balance(record_date)
+
+    # No previous balance or previous is more than 1 year old → skip recon
+    if previous is None:
+        mongo_update_balance_reconciled(balance_id, False, cad_balance, rmb_balance)
+        return (False, cad_balance, rmb_balance)
+
+    prev_date = previous['record_date']
+    if isinstance(prev_date, datetime):
+        prev_date = prev_date.date()
+
+    if record_date - prev_date > relativedelta(years=1).normalized():
+        # More than a year gap – treat as no previous
+        mongo_update_balance_reconciled(balance_id, False, cad_balance, rmb_balance)
+        return (False, cad_balance, rmb_balance)
+
+    # Query expenses between previous record_date and this record_date
+    start_dt = datetime.combine(prev_date, datetime.min.time())
+    end_dt = datetime.combine(record_date, datetime.max.time())
+
+    cursor = mongo_get_expenses(
+        CollectionName.Expense,
+        start_date=start_dt,
+        end_date=end_dt,
+    )
+
+    # Accumulate credits and debits by currency
+    cad_credits = 0.0
+    cad_debits = 0.0
+    rmb_credits = 0.0
+    rmb_debits = 0.0
+
+    for doc in cursor:
+        amount = doc.get('amount', 0.0)
+        currency = doc.get('currency', 'CAD')
+        txn_type = doc.get('transaction_type', '')
+
+        if currency == 'CAD':
+            if txn_type == 'Credit':
+                cad_credits += amount
+            else:
+                cad_debits += amount
+        elif currency == 'RMB':
+            if txn_type == 'Credit':
+                rmb_credits += amount
+            else:
+                rmb_debits += amount
+
+    prev_cad = previous.get('cad_balance', 0.0)
+    prev_rmb = previous.get('rmb_balance', 0.0)
+
+    cad_calculated_balance = prev_cad + cad_credits - cad_debits
+    rmb_calculated_balance = prev_rmb + rmb_credits - rmb_debits
+
+    cad_off = round(cad_balance - cad_calculated_balance, 2)
+    rmb_off = round(rmb_balance - rmb_calculated_balance, 2)
+
+    # Check 2% threshold on CAD only
+    denominator = max(abs(cad_calculated_balance), 1.0)
+    reconciled = abs(cad_off) / denominator <= RECONCILIATION_THRESHOLD
+
+    mongo_update_balance_reconciled(balance_id, reconciled, cad_off, rmb_off, last_balance_date=prev_date)
+    return (reconciled, cad_off, rmb_off)
+

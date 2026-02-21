@@ -11,6 +11,7 @@ from service.shared.models.enums import (
 from service.shared.models.expense import Expense, ExpenseCreateResponse, ExpenseInput, GetExpenseParams
 from service.shared.models.payment_schedule import PaymentSchedule, PaymentScheduleCreateResponse, PaymentScheduleInput
 from service.shared.models.cash import CashBalance, CashResponse, CashTransaction
+from service.shared.models.balance import Balance, BalanceInput, BalanceResponse
 from service.shared.models.report import (
     CategoryBreakdownResponse,
     Report,
@@ -36,6 +37,9 @@ __all__ = [
     'CashTransaction',
     'CashBalance',
     'CashResponse',
+    'Balance',
+    'BalanceInput',
+    'BalanceResponse',
     'Report',
     'TrendResponse',
     'CategoryBreakdownResponse',

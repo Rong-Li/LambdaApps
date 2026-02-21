@@ -69,3 +69,4 @@ class CollectionName(str, Enum):
     PaymentSchedule = 'payment_schedule'
     Cash = 'cash'
     Report = 'report'
+    Balance = 'balance'
