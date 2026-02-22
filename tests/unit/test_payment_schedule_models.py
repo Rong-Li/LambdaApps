@@ -33,7 +33,7 @@ class TestPaymentScheduleInput:
         schedule = PaymentScheduleInput(
             name='Rent Payment',
             amount=1500.00,
-            category=Category.Mortgage,
+            category=Category.Housing,
             frequency=Frequency.Monthly,
             monthly_dates=[1, 15],
             start_date=date(2026, 1, 1),

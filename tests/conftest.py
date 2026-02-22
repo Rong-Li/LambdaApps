@@ -48,26 +48,24 @@ def sample_report_document():
         'earning_credit': 5000.00,
         'debit_by_category': {
             'Groceries': 450.00,
-            'EatOut': 200.50,
+            'Dine Out': 200.50,
             'Transportation': 150.00,
-            'Mortgage': 1200.00,
+            'Housing': 1250.00,
             'Utilities': 180.25,
             'Shopping': 120.00,
-            'Gas': 100.00,
-            'Insurance': 50.00,
+            'Car': 100.00,
         },
         'credit_by_category': {
             'Salary': 5000.00,
         },
         'count_by_category': {
             'Groceries': 10,
-            'EatOut': 5,
+            'Dine Out': 5,
             'Transportation': 3,
-            'Mortgage': 1,
+            'Housing': 2,
             'Utilities': 2,
             'Shopping': 4,
-            'Gas': 3,
-            'Insurance': 1,
+            'Car': 3,
             'Salary': 1,
         },
     }
@@ -79,7 +77,7 @@ def multiple_expenses():
     return [
         {'amount': 100.0, 'category': 'Groceries', 'transaction_type': 'Debit', 'created_at': datetime(2026, 1, 15)},
         {'amount': 50.0, 'category': 'Groceries', 'transaction_type': 'Debit', 'created_at': datetime(2026, 1, 16)},
-        {'amount': 30.0, 'category': 'EatOut', 'transaction_type': 'Debit', 'created_at': datetime(2026, 1, 17)},
+        {'amount': 30.0, 'category': 'Dine Out', 'transaction_type': 'Debit', 'created_at': datetime(2026, 1, 17)},
         {'amount': 5000.0, 'category': 'Salary', 'transaction_type': 'Credit', 'created_at': datetime(2026, 1, 1)},
     ]
 

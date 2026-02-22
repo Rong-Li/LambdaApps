@@ -99,13 +99,13 @@ class TestCategory:
         """Test all expected categories are defined."""
         expected = [
             'Groceries',
-            'EatOut',
+            'DineOut',
             'Transportation',
-            'Mortgage',
+            'Housing',
             'Utilities',
             'Shopping',
-            'Gas',
-            'Insurance',
+            'Car',
+            'Entertainment',
         ]
 
         for cat in expected:
@@ -114,7 +114,7 @@ class TestCategory:
     def test_category_values(self):
         """Test category string values."""
         assert Category.Groceries.value == 'Groceries'
-        assert Category.EatOut.value == 'EatOut'
+        assert Category.DineOut.value == 'Dine Out'
 
 
 class TestTransactionType:

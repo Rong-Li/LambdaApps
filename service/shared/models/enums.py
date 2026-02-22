@@ -5,15 +5,20 @@ from enum import Enum
 
 class CategoryExpense(str, Enum):
     """Expense-specific categories (spending)."""
-
     Groceries = 'Groceries'
-    EatOut = 'EatOut'
-    Transportation = 'Transportation'
-    Mortgage = 'Mortgage'
-    Utilities = 'Utilities'
-    Shopping = 'Shopping'
-    Gas = 'Gas'
-    Insurance = 'Insurance'
+    DineOut = 'Dine Out'
+    Shopping = 'Shopping' # Clothing, Skincare, shoppers
+    Car = 'Car' # Gas, car maintenance, insurance
+    Entertainment = 'Entertainment' # Sport, Entertainment, membership (apple, spotify)
+    Medical = 'Medical' # Medicine, Massage, Dental
+    Transportation = 'Transportation' # public transit.
+    PersonalImprovement = 'Personal Improvement' # Study, Lessons, Certification
+    Housing = 'Housing' # Mortgage, Condo Maintainese, Property Tax, Insurance
+    HomeImprovement = 'Home Improvement'
+    Utilities = 'Utilities' # Internet, Phone bill
+    Gift = 'Gift' # Friends, Parent
+    Travel = 'Travel' # Plane Ticket, Hotel, etc.
+    Miscellaneous = 'Miscellaneous' # Haircut, others
 
     @classmethod
     def values(cls) -> set[str]:
@@ -25,6 +30,8 @@ class CategoryEarning(str, Enum):
     """Earning-specific categories (income)."""
 
     Salary = 'Salary'
+    TaxReturn = 'Tax Return'
+    CashBack = 'Cash Back' # Credit Card, Rakuten
 
     @classmethod
     def values(cls) -> set[str]:

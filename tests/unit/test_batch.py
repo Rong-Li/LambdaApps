@@ -23,7 +23,7 @@ class TestAggregate:
         # total_credit = 5000
         assert result.total_credit == 5000.0
 
-        # expense categories: Groceries (150 debit), EatOut (30 debit)
+        # expense categories: Groceries (150 debit), Dine Out (30 debit)
         assert result.expense_debit == 180.0
         assert result.expense_credit == 0.0
 
@@ -33,9 +33,9 @@ class TestAggregate:
 
         # Per-category breakdowns
         assert result.debit_by_category['Groceries'] == 150.0
-        assert result.debit_by_category['EatOut'] == 30.0
+        assert result.debit_by_category['Dine Out'] == 30.0
         assert result.count_by_category['Groceries'] == 2
-        assert result.count_by_category['EatOut'] == 1
+        assert result.count_by_category['Dine Out'] == 1
 
     def test_aggregate_empty_list(self):
         """Test aggregation with no expenses."""
