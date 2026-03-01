@@ -6,7 +6,7 @@ from aws_lambda_powertools.event_handler import Response
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from service.shared.database import (
+from service.shared.utils.mongo import (
     mongo_get_cash_balance,
     mongo_get_cash_transactions,
     mongo_reset_cash,

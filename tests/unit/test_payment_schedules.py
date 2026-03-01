@@ -140,7 +140,7 @@ class TestUpdatePaymentSchedule:
     """Tests for PUT /payment-schedule/{id} endpoint."""
 
     @patch('service.api.routes.payment_schedules.mongo_get_payment_schedule_by_id')
-    @patch('service.api.routes.payment_schedules.mongo_update_payment_schedule')
+    @patch('service.api.routes.payment_schedules.mongo_update')
     def test_update_payment_schedule_success(
         self, mock_mongo_update, mock_mongo_get, sample_payment_schedule_data, sample_payment_schedule_document
     ):
@@ -159,7 +159,7 @@ class TestUpdatePaymentSchedule:
         assert response.status_code == 200
         assert response.body['name'] == 'Netflix Subscription'
 
-    @patch('service.api.routes.payment_schedules.mongo_update_payment_schedule')
+    @patch('service.api.routes.payment_schedules.mongo_update')
     def test_update_payment_schedule_not_found(self, mock_mongo_update, sample_payment_schedule_data):
         """Test not found returns 404."""
         mock_mongo_update.return_value = None
@@ -176,7 +176,7 @@ class TestUpdatePaymentSchedule:
 class TestDeletePaymentSchedule:
     """Tests for DELETE /payment-schedule/{id} endpoint."""
 
-    @patch('service.api.routes.payment_schedules.mongo_delete_payment_schedule')
+    @patch('service.api.routes.payment_schedules.mongo_delete')
     def test_delete_payment_schedule_success(self, mock_mongo_delete):
         """Test successful delete returns 204."""
         mock_result = MagicMock()
@@ -187,7 +187,7 @@ class TestDeletePaymentSchedule:
 
         assert response.status_code == 204
 
-    @patch('service.api.routes.payment_schedules.mongo_delete_payment_schedule')
+    @patch('service.api.routes.payment_schedules.mongo_delete')
     def test_delete_payment_schedule_not_found(self, mock_mongo_delete):
         """Test not found returns 404."""
         mock_mongo_delete.return_value = None

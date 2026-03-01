@@ -1,0 +1,1 @@
+"""Expense collection MongoDB utilities."""

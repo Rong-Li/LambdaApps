@@ -275,7 +275,7 @@ class TestCreateExpense:
 class TestUpdateExpense:
     """Tests for PUT /expense/{id} endpoint."""
 
-    @patch('service.api.routes.expenses.mongo_update_expense')
+    @patch('service.api.routes.expenses.mongo_update')
     def test_update_expense_success(self, mock_mongo_update):
         """Test successful expense update returns 200 with updated expense."""
         mock_result = MagicMock()
@@ -316,7 +316,7 @@ class TestUpdateExpense:
         assert update_doc['merchant'] == 'Costco'
         assert update_doc['description'] == 'Weekly groceries - updated'
 
-    @patch('service.api.routes.expenses.mongo_update_expense')
+    @patch('service.api.routes.expenses.mongo_update')
     def test_update_expense_not_found(self, mock_mongo_update):
         """Test update with non-existent id returns 404."""
         mock_mongo_update.return_value = None
@@ -335,7 +335,7 @@ class TestUpdateExpense:
         assert response.status_code == 404
         assert response.body['detail'] == 'Expense not found'
 
-    @patch('service.api.routes.expenses.mongo_update_expense')
+    @patch('service.api.routes.expenses.mongo_update')
     def test_update_expense_invalid_body(self, mock_mongo_update):
         """Test update with invalid body returns 422."""
         mock_event = MagicMock()
@@ -357,7 +357,7 @@ class TestUpdateExpense:
 class TestDeleteExpense:
     """Tests for DELETE /expense/{id} endpoint."""
 
-    @patch('service.api.routes.expenses.mongo_delete_expense')
+    @patch('service.api.routes.expenses.mongo_delete')
     def test_delete_expense_success(self, mock_mongo_delete):
         """Test successful delete returns 204."""
         mock_result = MagicMock()
@@ -369,7 +369,7 @@ class TestDeleteExpense:
         assert response.status_code == 204
         mock_mongo_delete.assert_called_once_with(CollectionName.Expense, '507f1f77bcf86cd799439011')
 
-    @patch('service.api.routes.expenses.mongo_delete_expense')
+    @patch('service.api.routes.expenses.mongo_delete')
     def test_delete_expense_not_found(self, mock_mongo_delete):
         """Test delete with non-existent id returns 404."""
         mock_mongo_delete.return_value = None

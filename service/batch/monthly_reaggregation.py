@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 
 from aws_lambda_powertools import Logger
 
-from service.shared.database import get_database, mongo_get_expenses
+from service.shared.utils.mongo import get_database, mongo_get_expenses
 from service.shared.models.enums import CollectionName
 from service.batch.daily_aggregation import _aggregate, _upsert_report
 from service.shared.utils.date_utils import get_month_lookback_start, get_month_range

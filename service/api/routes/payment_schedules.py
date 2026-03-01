@@ -6,12 +6,12 @@ from aws_lambda_powertools.event_handler import Response
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from pydantic import ValidationError
 
-from service.shared.database import (
-    mongo_delete_payment_schedule,
+from service.shared.utils.mongo import (
+    mongo_delete,
     mongo_get_payment_schedule_by_id,
     mongo_get_payment_schedules,
     mongo_insert,
-    mongo_update_payment_schedule,
+    mongo_update,
 )
 from service.shared.models import PaymentSchedule, PaymentScheduleCreateResponse, PaymentScheduleInput
 from service.shared.models.enums import Category, CollectionName, Currency, Frequency, TransactionType
@@ -145,7 +145,7 @@ def update_payment_schedule(id: str) -> Response:
     update_doc = schedule_data.model_dump()
     update_doc['updated_at'] = datetime.now(timezone.utc)
 
-    result = mongo_update_payment_schedule(CollectionName.PaymentSchedule, id, update_doc)
+    result = mongo_update(CollectionName.PaymentSchedule, id, update_doc)
 
     if result is None:
         return Response(
@@ -186,7 +186,7 @@ def delete_payment_schedule(id: str) -> Response:
 
     DELETE /payment-schedule/{id}
     """
-    result = mongo_delete_payment_schedule(CollectionName.PaymentSchedule, id)
+    result = mongo_delete(CollectionName.PaymentSchedule, id)
 
     if result is None:
         return Response(

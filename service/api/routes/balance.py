@@ -4,9 +4,9 @@ from aws_lambda_powertools.event_handler import Response
 from aws_lambda_powertools.event_handler.api_gateway import Router
 from pydantic import ValidationError
 
-from service.shared.database import (
+from service.shared.utils.mongo import (
     get_database,
-    mongo_delete_balance,
+    mongo_delete,
     mongo_get_balances,
     mongo_insert,
     mongo_reconcile_balance,
@@ -99,7 +99,7 @@ def delete_balance(id: str) -> Response:
 
     DELETE /balance/{id}
     """
-    result = mongo_delete_balance(id)
+    result = mongo_delete(CollectionName.Balance, id)
 
     if result is None:
         return Response(

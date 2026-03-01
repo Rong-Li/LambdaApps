@@ -9,7 +9,7 @@ from datetime import date, datetime
 
 from aws_lambda_powertools import Logger
 
-from service.shared.database import get_database, mongo_get_expenses
+from service.shared.utils.mongo import get_database, mongo_get_expenses
 from service.shared.models.enums import CategoryEarning, CategoryExpense, CollectionName
 from service.shared.models.report import Report
 

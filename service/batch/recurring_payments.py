@@ -9,7 +9,7 @@ from datetime import date, datetime, timedelta, timezone
 from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
-from service.shared.database import get_database, mongo_get_payment_schedules, mongo_insert
+from service.shared.utils.mongo import get_database, mongo_get_payment_schedules, mongo_insert
 from service.shared.models import ExpenseInput
 from service.shared.models.enums import CollectionName, Frequency
 

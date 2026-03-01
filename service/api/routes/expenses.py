@@ -5,7 +5,7 @@ from aws_lambda_powertools.event_handler.api_gateway import Router
 from aws_lambda_powertools.utilities.parser import parse
 from pydantic import ValidationError
 
-from service.shared.database import mongo_delete_expense, mongo_get_expenses, mongo_insert, mongo_update_expense
+from service.shared.utils.mongo import mongo_delete, mongo_get_expenses, mongo_insert, mongo_update
 from service.shared.models import Expense, ExpenseCreateResponse, ExpenseInput, GetExpenseParams
 from service.shared.models.enums import Category, CollectionName, Currency, TransactionType
 
@@ -111,7 +111,9 @@ def update_expense(id: str) -> Response:
         )
 
     update_doc = expense_data.model_dump()
-    result = mongo_update_expense(CollectionName.Expense, id, update_doc)
+    # Never update receipt_id; leave it unchanged on the document
+    update_doc = {k: v for k, v in update_doc.items() if k != 'receipt_id'}
+    result = mongo_update(CollectionName.Expense, id, update_doc)
 
     if result is None:
         return Response(
@@ -146,7 +148,7 @@ def delete_expense(id: str) -> Response:
 
     DELETE /expense/{id}
     """
-    result = mongo_delete_expense(CollectionName.Expense, id)
+    result = mongo_delete(CollectionName.Expense, id)
 
     if result is None:
         return Response(

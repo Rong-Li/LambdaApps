@@ -9,7 +9,7 @@ from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler import Response
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
-from service.shared.database import get_database
+from service.shared.utils.mongo import get_database
 from service.shared.models.enums import Category, CategoryExpense
 from service.shared.models.report import Report
 from service.shared.utils.date_utils import get_month_lookback_start

@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 from bson import ObjectId
 
 from service.api.routes.balance import create_balance, delete_balance, get_balances, reconcile_latest, router
+from service.shared.models.enums import CollectionName
 
 
 class TestGetBalances:
@@ -153,7 +154,7 @@ class TestCreateBalance:
 class TestDeleteBalance:
     """Tests for DELETE /balance/{id} endpoint."""
 
-    @patch('service.api.routes.balance.mongo_delete_balance')
+    @patch('service.api.routes.balance.mongo_delete')
     def test_delete_balance_success(self, mock_delete):
         """Test successful delete returns 204."""
         mock_result = MagicMock()
@@ -163,9 +164,9 @@ class TestDeleteBalance:
         response = delete_balance('507f1f77bcf86cd799439011')
 
         assert response.status_code == 204
-        mock_delete.assert_called_once_with('507f1f77bcf86cd799439011')
+        mock_delete.assert_called_once_with(CollectionName.Balance, '507f1f77bcf86cd799439011')
 
-    @patch('service.api.routes.balance.mongo_delete_balance')
+    @patch('service.api.routes.balance.mongo_delete')
     def test_delete_balance_not_found(self, mock_delete):
         """Test delete with non-existent id returns 404."""
         mock_delete.return_value = None
