@@ -18,6 +18,7 @@ class CategoryExpense(str, Enum):
     Utilities = 'Utilities' # Internet, Phone bill
     Gift = 'Gift' # Friends, Parent
     Travel = 'Travel' # Plane Ticket, Hotel, etc.
+    Pet = 'Pet'
     Miscellaneous = 'Miscellaneous' # Haircut, others
 
     @classmethod
