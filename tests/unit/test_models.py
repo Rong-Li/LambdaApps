@@ -106,6 +106,7 @@ class TestCategory:
             'Shopping',
             'Car',
             'Entertainment',
+            'Investment',
         ]
 
         for cat in expected:

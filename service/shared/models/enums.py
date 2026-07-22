@@ -20,6 +20,7 @@ class CategoryExpense(str, Enum):
     Travel = 'Travel' # Plane Ticket, Hotel, etc.
     Pet = 'Pet'
     Miscellaneous = 'Miscellaneous' # Haircut, others
+    Investment = 'Investment'
 
     @classmethod
     def values(cls) -> set[str]:
