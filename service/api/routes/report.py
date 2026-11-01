@@ -2,17 +2,15 @@
 
 import calendar
 from datetime import date, timedelta
-from functools import lru_cache
-
 
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.event_handler import Response
 from aws_lambda_powertools.event_handler.api_gateway import Router
 
-from service.shared.utils.mongo import get_database
 from service.shared.models.enums import Category, CategoryExpense
 from service.shared.models.report import Report
 from service.shared.utils.date_utils import get_month_lookback_start
+from service.shared.utils.mongo import get_database
 
 logger = Logger()
 router = Router()
@@ -21,21 +19,17 @@ VALID_MONTHS = {6, 12, 18, 24}
 MAX_LOOKBACK_MONTHS = 24
 
 
-@lru_cache
 def _get_reports_map() -> dict[str, Report]:
     """Fetch all reports for the last 24 months and return as {month: Report}.
 
-    This serves as the single data source for both endpoints,
-    avoiding redundant DB queries within the same Lambda invocation.
+    Read on each request so warm Lambda instances observe updated reports.
     """
     today = date.today()
     start_month = get_month_lookback_start(today, MAX_LOOKBACK_MONTHS).strftime('%Y-%m')
     end_month = today.strftime('%Y-%m')
 
     db = get_database()
-    cursor = db.reports.find(
-        {'month': {'$gte': start_month, '$lte': end_month}}
-    ).sort('month', 1)
+    cursor = db.reports.find({'month': {'$gte': start_month, '$lte': end_month}}).sort('month', 1)
 
     return {doc['month']: Report(**doc) for doc in cursor}
 
@@ -98,6 +92,16 @@ def _aggregate_reports(reports: list[Report]) -> dict | None:
         'net_expense': total_net_expense,
         'net_by_category': agg_net_by_cat,
         'count_by_category': agg_count_by_cat,
+    }
+
+
+def _month_snapshot(month: str, report: Report | None) -> dict:
+    """Return an explicit empty snapshot when a month has no report yet."""
+    return {
+        'month': month,
+        'net_expense': _compute_net_expense(report) if report else 0.0,
+        'net_by_category': _compute_net_by_category(report) if report else {},
+        'count_by_category': {key: count for key, count in report.count_by_category.items() if key in CategoryExpense.values()} if report else {},
     }
 
 
@@ -198,13 +202,21 @@ def get_category_breakdown() -> Response:
 
     GET /report/category-breakdown
 
-    Returns three fixed snapshots: last_month, current_year, last_year.
+    Returns current-month and year snapshots plus each month of the current year
+    through today. Keeps last_month for compatibility with older clients.
     Excludes earning-specific categories.
     """
     today = date.today()
     current_year = today.year
 
     reports_map = _get_reports_map()
+
+    current_month_str = today.strftime('%Y-%m')
+    current_month_data = _month_snapshot(current_month_str, reports_map.get(current_month_str))
+    current_year_months = []
+    for month in range(1, today.month + 1):
+        month_key = f'{current_year}-{month:02d}'
+        current_year_months.append(_month_snapshot(month_key, reports_map.get(month_key)))
 
     # --- Last month snapshot ---
     prev_month_str = (today.replace(day=1) - timedelta(days=1)).strftime('%Y-%m')
@@ -213,8 +225,7 @@ def get_category_breakdown() -> Response:
     prev_report = reports_map.get(prev_month_str)
     if prev_report:
         net_by_cat = _compute_net_by_category(prev_report)
-        count_by_cat = {k: v for k, v in prev_report.count_by_category.items()
-                        if k in CategoryExpense.values()}
+        count_by_cat = {k: v for k, v in prev_report.count_by_category.items() if k in CategoryExpense.values()}
         last_month_data = {
             'month': prev_month_str,
             'net_expense': _compute_net_expense(prev_report),
@@ -244,6 +255,8 @@ def get_category_breakdown() -> Response:
         last_year_data = {'year': str(last_year), **agg}
 
     response = {
+        'current_month': current_month_data,
+        'current_year_months': current_year_months,
         'last_month': last_month_data,
         'current_year': current_year_data,
         'last_year': last_year_data,

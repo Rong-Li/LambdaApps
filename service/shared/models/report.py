@@ -85,3 +85,5 @@ class CategoryBreakdownResponse(BaseModel):
     last_month: Optional[CategorySnapshotMonth] = None
     current_year: Optional[CategorySnapshotYear] = None
     last_year: Optional[CategorySnapshotYear] = None
+    current_month: Optional[CategorySnapshotMonth] = None
+    current_year_months: list[CategorySnapshotMonth] = Field(default_factory=list)
